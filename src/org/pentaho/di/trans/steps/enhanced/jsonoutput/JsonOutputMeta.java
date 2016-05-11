@@ -388,6 +388,7 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
                 outputFields[i] = new JsonOutputField();
                 outputFields[i].setFieldName(XMLHandler.getTagValue(fnode, "name"));
                 outputFields[i].setElementName(XMLHandler.getTagValue(fnode, "element"));
+                outputFields[i].setJSONFragment(!"N".equalsIgnoreCase(XMLHandler.getTagValue(fnode, "json_fragment")));
             }
         } catch (Exception e) {
             throw new KettleXMLException("Unable to load step info from XML", e);
@@ -540,6 +541,7 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
 
                 rep.saveStepAttribute(id_transformation, id_step, i, "field_name", field.getFieldName());
                 rep.saveStepAttribute(id_transformation, id_step, i, "field_element", field.getElementName());
+                rep.saveStepAttribute(id_transformation, id_step, i, "json_fragment", field.isJSONFragment());
             }
         } catch (Exception e) {
             throw new KettleException("Unable to save step information to the repository for id_step=" + id_step, e);
