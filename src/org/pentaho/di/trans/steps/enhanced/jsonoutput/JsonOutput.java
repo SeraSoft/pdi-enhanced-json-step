@@ -203,16 +203,18 @@ public class JsonOutput extends BaseStep implements StepInterface {
         String value = null;
 
         try {
-            if (meta.getJsonBloc() != null && meta.getJsonBloc().length()>0) {
-                ObjectNode theNode = new ObjectNode(nc);
-                // TBD Try to understand if this can have a performance impact and do it better...
+            if (jsonItems != null) {
+                if (jsonItems.size() > 0) {
+                    ObjectNode theNode = new ObjectNode(nc);
+                    // TBD Try to understand if this can have a performance impact and do it better...
 
-                theNode.put(meta.getJsonBloc(), mapper.readTree(mapper.writeValueAsString(jsonItems.size()>1
-                         ? jsonItems : (!meta.isUseArrayWithSingleInstance() ? jsonItems.get(0) : jsonItems))));
-                value = mapper.writeValueAsString(theNode);
-            } else {
-                value = mapper.writeValueAsString((jsonItems.size()>1
-                        ? jsonItems : (!meta.isUseArrayWithSingleInstance() ? jsonItems.get(0) : jsonItems)));
+                    theNode.put(meta.getJsonBloc(), mapper.readTree(mapper.writeValueAsString(jsonItems.size() > 1
+                            ? jsonItems : (!meta.isUseArrayWithSingleInstance() ? jsonItems.get(0) : jsonItems))));
+                    value = mapper.writeValueAsString(theNode);
+                } else {
+                    value = mapper.writeValueAsString((jsonItems.size() > 1
+                            ? jsonItems : (!meta.isUseArrayWithSingleInstance() ? jsonItems.get(0) : jsonItems)));
+                }
             }
 
         } catch (IOException e) {

@@ -195,9 +195,6 @@ public class JsonOutputMetaInjection implements StepMetaInjectionInterface {
                 case OUTPUT_VALUE:
                     meta.setOutputValue(lookValue);
                     break;
-                case COMPATIBILITY_MODE:
-                    meta.setCompatibilityMode("Y".equalsIgnoreCase(lookValue));
-                    break;
                 case FILE_NAME:
                     meta.setFileName(lookValue);
                     break;

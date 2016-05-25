@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.CTabFolder;
@@ -45,18 +46,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.Props;
 import org.pentaho.di.core.exception.KettleException;
@@ -71,6 +61,7 @@ import org.pentaho.di.trans.steps.enhanced.jsonoutput.JsonOutputField;
 import org.pentaho.di.trans.steps.enhanced.jsonoutput.JsonOutputMeta;
 import org.pentaho.di.ui.core.dialog.EnterSelectionDialog;
 import org.pentaho.di.ui.core.dialog.ErrorDialog;
+import org.pentaho.di.ui.core.gui.GUIResource;
 import org.pentaho.di.ui.core.widget.ColumnInfo;
 import org.pentaho.di.ui.core.widget.ComboVar;
 import org.pentaho.di.ui.core.widget.TableView;
@@ -1047,7 +1038,7 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
         try {
             RowMetaInterface r = transMeta.getPrevStepFields(stepname);
             if (r != null) {
-                BaseStepDialog.getFieldsFromPrevious(r, wFields, 1, new int[]{1, 2}, new int[]{3}, 5, 6,
+                getFieldsFromPrevious(r, wFields, 1, new int[]{1, 2} ,
                         new TableItemInsertListener() {
                             public boolean tableItemInserted(TableItem tableItem, ValueMetaInterface v) {
                                 if (v.isNumber()) {
@@ -1080,6 +1071,84 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
             new ErrorDialog(shell, BaseMessages.getString(PKG, "System.Dialog.GetFieldsFailed.Title"), BaseMessages
                     .getString(PKG, "System.Dialog.GetFieldsFailed.Message"), ke);
         }
+    }
+
+    public final void getFieldsFromPrevious( RowMetaInterface row, TableView tableView, int keyColumn,
+                                                    int[] nameColumn,
+                                                    TableItemInsertListener listener ) {
+        if ( row == null || row.size() == 0 ) {
+            return; // nothing to do
+        }
+
+        Table table = tableView.table;
+
+        // get a list of all the non-empty keys (names)
+        //
+        List<String> keys = new ArrayList<String>();
+        for ( int i = 0; i < table.getItemCount(); i++ ) {
+            TableItem tableItem = table.getItem( i );
+            String key = tableItem.getText( keyColumn );
+            if ( !Const.isEmpty( key ) && keys.indexOf( key ) < 0 ) {
+                keys.add( key );
+            }
+        }
+
+        int choice = 0;
+
+        if ( keys.size() > 0 ) {
+            // Ask what we should do with the existing data in the step.
+            //
+            MessageDialog md =
+                    new MessageDialog( tableView.getShell(),
+                            BaseMessages.getString( PKG, "BaseStepDialog.GetFieldsChoice.Title" ), // "Warning!"
+                            null,
+                            BaseMessages.getString( PKG, "BaseStepDialog.GetFieldsChoice.Message", "" + keys.size(), "" + row.size() ),
+                            MessageDialog.WARNING, new String[] {
+                            BaseMessages.getString( PKG, "BaseStepDialog.AddNew" ),
+                            BaseMessages.getString( PKG, "BaseStepDialog.Add" ),
+                            BaseMessages.getString( PKG, "BaseStepDialog.ClearAndAdd" ),
+                            BaseMessages.getString( PKG, "BaseStepDialog.Cancel" ), }, 0 );
+            MessageDialog.setDefaultImage( GUIResource.getInstance().getImageSpoon() );
+            int idx = md.open();
+            choice = idx & 0xFF;
+        }
+
+        if ( choice == 3 || choice == 255 ) {
+            return; // Cancel clicked
+        }
+
+        if ( choice == 2 ) {
+            tableView.clearAll( false );
+        }
+
+        for ( int i = 0; i < row.size(); i++ ) {
+            ValueMetaInterface v = row.getValueMeta( i );
+
+            boolean add = true;
+
+            if ( choice == 0 ) { // hang on, see if it's not yet in the table view
+
+                if ( keys.indexOf( v.getName() ) >= 0 ) {
+                    add = false;
+                }
+            }
+
+            if ( add ) {
+                TableItem tableItem = new TableItem( table, SWT.NONE );
+
+                for ( int c = 0; c < nameColumn.length; c++ ) {
+                    tableItem.setText( nameColumn[ c ], Const.NVL( v.getName(), "" ) );
+                }
+                if ( listener != null ) {
+                    if ( !listener.tableItemInserted( tableItem, v ) ) {
+                        tableItem.dispose(); // remove it again
+                    }
+                }
+            }
+        }
+        tableView.removeEmptyRows();
+        tableView.setRowNums();
+        tableView.optWidth( true );
     }
 
     private void updateOperation() {

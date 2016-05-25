@@ -65,7 +65,7 @@ import org.w3c.dom.Node;
 /**
  * Store run-time data on the JsonInput step.
  */
-@Step( id = "EnhancedJsonInput", image = "JSI.svg", i18nPackageName = "org.pentaho.di.trans.steps.jsoninput",
+@Step( id = "EnhancedJsonInput", image = "JSI.svg", i18nPackageName = "org.pentaho.di.trans.steps.enhanced.jsoninput",
     name = "EnhancedJsonInput.name", description = "EnhancedJsonInput.description", categoryDescription = "EnhancedJsonInput.category" )
 public class JsonInputMeta extends BaseFileInputStepMeta implements StepMetaInterface {
   private static Class<?> PKG = JsonInputMeta.class; // for i18n purposes, needed by Translator2!!
