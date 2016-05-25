@@ -204,7 +204,7 @@ public class JsonOutput extends BaseStep implements StepInterface {
 
         try {
             if (jsonItems != null) {
-                if (jsonItems.size() > 0) {
+                if (meta.getJsonBloc() != null && meta.getJsonBloc().length()>0) {
                     ObjectNode theNode = new ObjectNode(nc);
                     // TBD Try to understand if this can have a performance impact and do it better...
 
