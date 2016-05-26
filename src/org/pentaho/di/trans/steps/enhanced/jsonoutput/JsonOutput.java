@@ -26,6 +26,7 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -97,29 +98,61 @@ public class JsonOutput extends BaseStep implements StepInterface {
 
             switch (v.getType()) {
                 case ValueMetaInterface.TYPE_BOOLEAN:
-                    itemNode.put(outputField.getElementName(), data.inputRowMeta.getBoolean(row, data.fieldIndexes[i]));
+                    Boolean boolValue = data.inputRowMeta.getBoolean(row, data.fieldIndexes[i]);
+
+                    if (boolValue != null)
+                        itemNode.put(outputField.getElementName(), boolValue);
+                    else {
+                        if (!outputField.isRemoveIfBlank())
+                            itemNode.put(outputField.getElementName(), boolValue);
+                    }
                     break;
+
                 case ValueMetaInterface.TYPE_INTEGER:
-                    itemNode.put(outputField.getElementName(), data.inputRowMeta.getInteger(row, data.fieldIndexes[i]));
+                    Long integerValue = data.inputRowMeta.getInteger(row, data.fieldIndexes[i]);
+
+                    if (integerValue != null)
+                        itemNode.put(outputField.getElementName(), integerValue);
+                    else
+                        if (!outputField.isRemoveIfBlank())
+                            itemNode.put(outputField.getElementName(), integerValue);
                     break;
                 case ValueMetaInterface.TYPE_NUMBER:
-                    itemNode.put(outputField.getElementName(), data.inputRowMeta.getNumber(row, data.fieldIndexes[i]));
+                    Double numberValue = data.inputRowMeta.getNumber(row, data.fieldIndexes[i]);
+
+                    if (numberValue != null)
+                        itemNode.put(outputField.getElementName(), numberValue);
+                    else
+                        if (!outputField.isRemoveIfBlank())
+                            itemNode.put(outputField.getElementName(), numberValue);
                     break;
                 case ValueMetaInterface.TYPE_BIGNUMBER:
-                    itemNode.put(outputField.getElementName(), data.inputRowMeta.getBigNumber(row, data.fieldIndexes[i]));
+                    BigDecimal bignumberValue = data.inputRowMeta.getBigNumber(row, data.fieldIndexes[i]);
+
+                    if(bignumberValue != null)
+                        itemNode.put(outputField.getElementName(), bignumberValue);
+                    else
+                        if (!outputField.isRemoveIfBlank())
+                            itemNode.put(outputField.getElementName(), bignumberValue);
                     break;
                 default:
                     String value = data.inputRowMeta.getString(row, data.fieldIndexes[i]);
-                    if(outputField.isJSONFragment()) {
-                        try {
-                            JsonNode jsonNode = mapper.readTree(value);
-                            itemNode.put(outputField.getElementName(), jsonNode);
-                        } catch (IOException e) {
-                            // TBD Exception must be properly managed
-                            e.printStackTrace();
+                    if (value != null) {
+                        if (outputField.isJSONFragment()) {
+                            try {
+                                JsonNode jsonNode = mapper.readTree(value);
+                                itemNode.put(outputField.getElementName(), jsonNode);
+                            } catch (IOException e) {
+                                // TBD Exception must be properly managed
+                                e.printStackTrace();
+                            }
+                        } else {
+                            itemNode.put(outputField.getElementName(), value);
+
                         }
                     } else {
-                        itemNode.put(outputField.getElementName(), value);
+                        if (!outputField.isRemoveIfBlank())
+                            itemNode.put(outputField.getElementName(), value);
                     }
 
                     break;

@@ -389,6 +389,7 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
                 outputFields[i].setFieldName(XMLHandler.getTagValue(fnode, "name"));
                 outputFields[i].setElementName(XMLHandler.getTagValue(fnode, "element"));
                 outputFields[i].setJSONFragment(!"N".equalsIgnoreCase(XMLHandler.getTagValue(fnode, "json_fragment")));
+                outputFields[i].setRemoveIfBlank(!"N".equalsIgnoreCase(XMLHandler.getTagValue(fnode, "remove_if_blank")));
             }
         } catch (Exception e) {
             throw new KettleXMLException("Unable to load step info from XML", e);
@@ -457,6 +458,7 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
                 retval.append("        ").append(XMLHandler.addTagValue("name", field.getFieldName()));
                 retval.append("        ").append(XMLHandler.addTagValue("element", field.getElementName()));
                 retval.append("        ").append(XMLHandler.addTagValue("json_fragment", field.isJSONFragment()));
+                retval.append("        ").append(XMLHandler.addTagValue("remove_if_blank", field.isRemoveIfBlank()));
                 retval.append("    </field>" + Const.CR);
             }
         }
@@ -498,6 +500,7 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
                 outputFields[i].setFieldName(rep.getStepAttributeString(id_step, i, "field_name"));
                 outputFields[i].setElementName(rep.getStepAttributeString(id_step, i, "field_element"));
                 outputFields[i].setJSONFragment(!"N".equalsIgnoreCase(rep.getStepAttributeString(id_step, i, "json_fragment")));
+                outputFields[i].setRemoveIfBlank(!"N".equalsIgnoreCase(rep.getStepAttributeString(id_step, i, "remove_if_blank")));
             }
         } catch (Exception e) {
             throw new KettleException("Unexpected error reading step information from the repository", e);
@@ -542,6 +545,7 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
                 rep.saveStepAttribute(id_transformation, id_step, i, "field_name", field.getFieldName());
                 rep.saveStepAttribute(id_transformation, id_step, i, "field_element", field.getElementName());
                 rep.saveStepAttribute(id_transformation, id_step, i, "json_fragment", field.isJSONFragment());
+                rep.saveStepAttribute(id_transformation, id_step, i, "remove_if_blank", field.isRemoveIfBlank());
             }
         } catch (Exception e) {
             throw new KettleException("Unable to save step information to the repository for id_step=" + id_step, e);

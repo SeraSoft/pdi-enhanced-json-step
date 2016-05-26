@@ -739,6 +739,11 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
                                 ColumnInfo.COLUMN_TYPE_CCOMBO, new String[]{
                                 BaseMessages.getString(PKG, "System.Combo.Yes"),
                                 BaseMessages.getString(PKG, "System.Combo.No")}, true),
+                        new ColumnInfo(
+                                BaseMessages.getString(PKG, "JsonOutputDialog.RemoveIfBlank.Column"),
+                                ColumnInfo.COLUMN_TYPE_CCOMBO, new String[]{
+                                BaseMessages.getString(PKG, "System.Combo.Yes"),
+                                BaseMessages.getString(PKG, "System.Combo.No")}, true),
                 };
         colinf[1].setUsingVariables(true);
         wFields =
@@ -966,6 +971,12 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
             if (jsonFragment != null) {
                 item.setText(3, jsonFragment);
             }
+            String removeIfBlank =
+                    field.isRemoveIfBlank() ? BaseMessages.getString(PKG, "System.Combo.Yes") : BaseMessages.getString(
+                            PKG, "System.Combo.No");
+            if (removeIfBlank != null) {
+                item.setText(4, removeIfBlank);
+            }
 
         }
 
@@ -1016,6 +1027,7 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
             // CHECKSTYLE:Indentation:OFF
             jsometa.getOutputFields()[i] = field;
             field.setJSONFragment(BaseMessages.getString(PKG, "System.Combo.Yes").equalsIgnoreCase(item.getText(3)));
+            field.setRemoveIfBlank(BaseMessages.getString(PKG, "System.Combo.Yes").equalsIgnoreCase(item.getText(4)));
         }
     }
 

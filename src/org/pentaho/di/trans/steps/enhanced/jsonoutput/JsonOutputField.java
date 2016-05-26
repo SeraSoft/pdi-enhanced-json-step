@@ -33,6 +33,7 @@ public class JsonOutputField implements Cloneable {
     private String fieldName;
     private String elementName;
     private boolean isJSONFragment;
+    private boolean removeIfBlank;
 
     public boolean isJSONFragment() {
         return isJSONFragment;
@@ -40,6 +41,14 @@ public class JsonOutputField implements Cloneable {
 
     public void setJSONFragment(boolean JSONFragment) {
         isJSONFragment = JSONFragment;
+    }
+
+    public boolean isRemoveIfBlank() {
+        return removeIfBlank;
+    }
+
+    public void setRemoveIfBlank(boolean removeIfBlank) {
+        this.removeIfBlank = removeIfBlank;
     }
 
     public JsonOutputField(String fieldName, String elementName, int type, String format, int length,
