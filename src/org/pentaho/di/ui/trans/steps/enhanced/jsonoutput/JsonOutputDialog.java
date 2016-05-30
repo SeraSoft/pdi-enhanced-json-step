@@ -111,6 +111,10 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
     private boolean gotPreviousFields = false;
 
     private ColumnInfo[] colinf;
+    private ColumnInfo[] keyColInf;
+
+    private TableView wKeyFields;
+    private FormData fdKeyFields;
 
     private Label wlAddToResult;
     private Button wAddToResult;
@@ -287,9 +291,35 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
         Composite wKeyConfigComp = new Composite(wTabFolder, SWT.NONE);
         props.setLook(wKeyConfigComp);
 
+        /* wGet = new Button(wKeyConfigComp, SWT.PUSH);
+        wGet.setText(BaseMessages.getString(PKG, "JsonOutputDialog.Get.Button"));
+        wGet.setToolTipText(BaseMessages.getString(PKG, "JsonOutputDialog.Get.Tooltip"));
+
+        setButtonPositions(new Button[]{wGet}, margin, null);*/
+
+        final int keyFieldsRows = input.getKeyFields().length;
+
+        keyColInf =
+                new ColumnInfo[]{
+                        new ColumnInfo(BaseMessages.getString(PKG, "JsonOutputDialog.Fieldname.Column"),
+                                ColumnInfo.COLUMN_TYPE_CCOMBO, new String[]{""}, false),
+                };
+        wKeyFields =
+                new TableView(transMeta, wKeyConfigComp, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI, keyColInf, keyFieldsRows, lsMod,
+                        props);
+
+        fdKeyFields = new FormData();
+        fdKeyFields.left = new FormAttachment(0, 0);
+        fdKeyFields.top = new FormAttachment(0, 0);
+        fdKeyFields.right = new FormAttachment(100, 0);
+        fdKeyFields.bottom = new FormAttachment(100, 0);
+       // fdKeyFields.bottom = new FormAttachment(wGet, -margin);
+        wKeyFields.setLayoutData(fdKeyFields);
+
         wKeyConfigComp.setLayout(keyConfigLayout);
         wKeyConfigComp.layout();
         wKeyConfigTab.setControl(wKeyConfigComp);
+
         // END OF Key Configuration TAB
 
         // Fields tab...
@@ -310,7 +340,7 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
 
         setButtonPositions(new Button[]{wGet}, margin, null);
 
-        final int FieldsRows = input.getOutputFields().length;
+        final int fieldsRows = input.getOutputFields().length;
 
         colinf =
                 new ColumnInfo[]{
@@ -331,7 +361,7 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
                 };
         colinf[1].setUsingVariables(true);
         wFields =
-                new TableView(transMeta, wFieldsComp, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI, colinf, FieldsRows, lsMod,
+                new TableView(transMeta, wFieldsComp, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI, colinf, fieldsRows, lsMod,
                         props);
 
         fdFields = new FormData();
@@ -355,7 +385,7 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
                         for (int i = 0; i < row.size(); i++) {
                             inputFields.put(row.getValueMeta(i).getName(), Integer.valueOf(i));
                         }
-                        setComboBoxes();
+                        setFieldListComboBoxes();
                     } catch (KettleException e) {
                         logError(BaseMessages.getString(PKG, "System.Dialog.GetFieldsFailed.Message"));
                     }
@@ -918,7 +948,7 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
         wAddToResult.setEnabled(enableFilename);
     }
 
-    protected void setComboBoxes() {
+    protected void setFieldListComboBoxes() {
         // Something was changed in the row.
         //
         final Map<String, Integer> fields = new HashMap<String, Integer>();
@@ -933,6 +963,7 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
 
         Const.sortStrings(fieldNames);
         colinf[0].setComboValues(fieldNames);
+        keyColInf[0].setComboValues(fieldNames);
     }
 
     private void setEncodings() {

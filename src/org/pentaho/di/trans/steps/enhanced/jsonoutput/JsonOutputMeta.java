@@ -67,7 +67,7 @@ import org.w3c.dom.Node;
         name = "EnhancedJsonOutput.name",
         description = "EnhancedJsonOutput.description",
         categoryDescription = "EnhancedJsonOutput.category")
-@InjectionSupported( localizationPrefix = "JsonOutput.Injection.", groups = {  "GENERAL", "KEY", "FIELDS" } )
+@InjectionSupported( localizationPrefix = "JsonOutput.Injection.", groups = {  "GENERAL", "KEY_FIELDS", "FIELDS" } )
 public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
     private static Class<?> PKG = JsonOutputMeta.class; // for i18n purposes, needed by Translator2!!
 
@@ -128,6 +128,12 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
      */
     @InjectionDeep
     private JsonOutputField[] outputFields;
+
+    /**
+     * The key fields
+     */
+    @InjectionDeep
+    private JsonOutputKeyField[] keyFields;
 
     @Injection( name = "ADD_TO_RESULT", group = "GENERAL" )
     private boolean AddToResult;
@@ -349,6 +355,15 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
         this.outputFields = outputFields;
     }
 
+
+    public JsonOutputKeyField[] getKeyFields() {
+        return keyFields;
+    }
+
+    public void setKeyFields(JsonOutputKeyField[] keyFields) {
+        this.keyFields = keyFields;
+    }
+
     public void loadXML(Node stepnode, List<DatabaseMeta> databases, IMetaStore metaStore) throws KettleXMLException {
         readData(stepnode);
     }
@@ -357,14 +372,26 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
         outputFields = new JsonOutputField[nrfields];
     }
 
+    public void allocateKey(int nrfields) {
+        keyFields = new JsonOutputKeyField[nrfields];
+    }
+
     public Object clone() {
         JsonOutputMeta retval = (JsonOutputMeta) super.clone();
-        int nrfields = outputFields.length;
+        int nrOutputFields = outputFields.length;
 
-        retval.allocate(nrfields);
+        retval.allocate(nrOutputFields);
 
-        for (int i = 0; i < nrfields; i++) {
+        for (int i = 0; i < nrOutputFields; i++) {
             retval.outputFields[i] = (JsonOutputField) outputFields[i].clone();
+        }
+
+        int nrKeyFields = keyFields.length;
+
+        retval.allocateKey(nrKeyFields);
+
+        for (int i = 0; i < nrKeyFields; i++) {
+            retval.keyFields[i] = (JsonOutputKeyField) keyFields[i].clone();
         }
 
         return retval;
@@ -399,6 +426,18 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
             doNotOpenNewFileInit = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "file", "doNotOpenNewFileInit"));
             servletOutput = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "file", "servlet_output"));
 
+            Node keyFieldNodes = XMLHandler.getSubNode(stepnode, "key_fields");
+            int nrKeyFields = XMLHandler.countNodes(keyFieldNodes, "key_field");
+
+            allocateKey(nrKeyFields);
+
+            for (int i = 0; i < nrKeyFields; i++) {
+                Node fnode = XMLHandler.getSubNodeByNr(keyFieldNodes, "key_field", i);
+
+                keyFields[i] = new JsonOutputKeyField();
+                keyFields[i].setFieldName(XMLHandler.getTagValue(fnode, "key_field_name"));
+            }
+
             Node fields = XMLHandler.getSubNode(stepnode, "fields");
             int nrfields = XMLHandler.countNodes(fields, "field");
 
@@ -425,6 +464,7 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
         nrRowsInBloc = "1";
         operationType = OPERATION_TYPE_WRITE_TO_FILE;
         extension = "js";
+
         int nrfields = 0;
 
         allocate(nrfields);
@@ -433,6 +473,15 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
             outputFields[i] = new JsonOutputField();
             outputFields[i].setFieldName("field" + i);
             outputFields[i].setElementName("field" + i);
+        }
+
+        int nrKeyFields = 0;
+
+        allocateKey(nrKeyFields);
+
+        for (int i = 0; i < nrKeyFields; i++) {
+            keyFields[i] = new JsonOutputKeyField();
+            keyFields[i].setFieldName("key_field" + i);
         }
     }
 
@@ -470,6 +519,18 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
         retval.append("      ").append(XMLHandler.addTagValue("doNotOpenNewFileInit", doNotOpenNewFileInit));
         retval.append("      ").append(XMLHandler.addTagValue("servlet_output", servletOutput));
         retval.append("      </file>" + Const.CR);
+
+        retval.append("    <key_fields>").append(Const.CR);
+        for (int i = 0; i < keyFields.length; i++) {
+            JsonOutputKeyField keyField = keyFields[i];
+
+            if (keyField.getFieldName() != null && keyField.getFieldName().length() != 0) {
+                retval.append("      <key_field>").append(Const.CR);
+                retval.append("        ").append(XMLHandler.addTagValue("key_field_name", keyField.getFieldName()));
+                retval.append("    </key_field>" + Const.CR);
+            }
+        }
+        retval.append("    </key_fields>").append(Const.CR);
 
         retval.append("    <fields>").append(Const.CR);
         for (int i = 0; i < outputFields.length; i++) {
@@ -511,6 +572,16 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
             createparentfolder = rep.getStepAttributeBoolean(id_step, "create_parent_folder");
             doNotOpenNewFileInit = rep.getStepAttributeBoolean(id_step, "doNotOpenNewFileInit");
             servletOutput = rep.getStepAttributeBoolean(id_step, "file_servlet_output");
+
+            int nrKeyFields = rep.countNrStepAttributes(id_step, "key_field_name");
+
+            allocateKey(nrKeyFields);
+
+            for (int i = 0; i < nrKeyFields; i++) {
+                keyFields[i] = new JsonOutputKeyField();
+
+                outputFields[i].setFieldName(rep.getStepAttributeString(id_step, i, "key_field_name"));
+            }
 
             int nrfields = rep.countNrStepAttributes(id_step, "field_name");
 
@@ -560,6 +631,12 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
             rep.saveStepAttribute(id_transformation, id_step, "create_parent_folder", createparentfolder);
             rep.saveStepAttribute(id_transformation, id_step, "doNotOpenNewFileInit", doNotOpenNewFileInit);
             rep.saveStepAttribute(id_transformation, id_step, "file_servlet_output", servletOutput);
+
+            for (int i = 0; i < keyFields.length; i++) {
+                JsonOutputKeyField keyField = keyFields[i];
+
+                rep.saveStepAttribute(id_transformation, id_step, i, "field_name", keyField.getFieldName());
+            }
 
             for (int i = 0; i < outputFields.length; i++) {
                 JsonOutputField field = outputFields[i];

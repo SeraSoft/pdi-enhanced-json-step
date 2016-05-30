@@ -41,49 +41,49 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 22-jan-2005
  */
 public class JsonOutputData extends BaseStepData implements StepDataInterface {
-  public RowMetaInterface inputRowMeta;
-  public RowMetaInterface outputRowMeta;
-  public int inputRowMetaSize;
 
-  public int nrFields;
+    public RowMetaInterface inputRowMeta;
+    public RowMetaInterface outputRowMeta;
+    public int inputRowMetaSize;
 
-  public int[] fieldIndexes;
-  public JSONObject jg;
-  public JSONArray ja;
-  public int nrRow;
-  public NumberFormat nf;
-  public DecimalFormat df;
-  public DecimalFormatSymbols dfs;
+    public int nrFields;
+    public int[] fieldIndexes;
+    public JSONObject jg;
+    public JSONArray ja;
+    public int nrRow;
+    public NumberFormat nf;
+    public DecimalFormat df;
+    public DecimalFormatSymbols dfs;
 
-  public SimpleDateFormat daf;
-  public DateFormatSymbols dafs;
+    public SimpleDateFormat daf;
+    public DateFormatSymbols dafs;
 
-  public DecimalFormat defaultDecimalFormat;
-  public DecimalFormatSymbols defaultDecimalFormatSymbols;
+    public DecimalFormat defaultDecimalFormat;
+    public DecimalFormatSymbols defaultDecimalFormatSymbols;
 
-  public SimpleDateFormat defaultDateFormat;
-  public DateFormatSymbols defaultDateFormatSymbols;
+    public SimpleDateFormat defaultDateFormat;
+    public DateFormatSymbols defaultDateFormatSymbols;
 
-  public boolean outputValue;
-  public boolean writeToFile;
+    public boolean outputValue;
+    public boolean writeToFile;
 
-  public String realBlocName;
-  public String blocKeyName;
-  public int splitnr;
-  public Writer writer;
-  public int nrRowsInBloc;
+    public String realBlocName;
+    public String blocKeyName;
+    public int splitnr;
+    public Writer writer;
+    public int nrRowsInBloc;
 
-  /**
-   *
-   */
-  public JsonOutputData() {
-    super();
-    this.ja = new JSONArray();
-    this.nrRow = 0;
-    this.outputValue = false;
-    this.writeToFile = false;
-    this.writer = null;
-    this.nrRowsInBloc = 0;
-  }
+    /**
+     *
+     */
+    public JsonOutputData() {
+        super();
+        this.ja = new JSONArray();
+        this.nrRow = 0;
+        this.outputValue = false;
+        this.writeToFile = false;
+        this.writer = null;
+        this.nrRowsInBloc = 0;
+    }
 
 }
