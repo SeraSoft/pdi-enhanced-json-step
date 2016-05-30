@@ -34,6 +34,9 @@ import org.pentaho.di.core.database.DatabaseMeta;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.exception.KettleStepException;
 import org.pentaho.di.core.exception.KettleXMLException;
+import org.pentaho.di.core.injection.Injection;
+import org.pentaho.di.core.injection.InjectionDeep;
+import org.pentaho.di.core.injection.InjectionSupported;
 import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.core.row.ValueMetaInterface;
 import org.pentaho.di.core.row.value.ValueMetaString;
@@ -58,14 +61,20 @@ import org.w3c.dom.Node;
  *
  * @since 14-june-2010
  */
-@Step(id = "EnhancedJsonOutput", image = "JSO.svg", i18nPackageName = "org.pentaho.di.trans.steps.enhanced.jsonoutput",
-        name = "EnhancedJsonOutput.name", description = "EnhancedJsonOutput.description", categoryDescription = "EnhancedJsonOutput.category")
+@Step(id = "EnhancedJsonOutput",
+        image = "JSO.svg",
+        i18nPackageName = "org.pentaho.di.trans.steps.enhanced.jsonoutput",
+        name = "EnhancedJsonOutput.name",
+        description = "EnhancedJsonOutput.description",
+        categoryDescription = "EnhancedJsonOutput.category")
+@InjectionSupported( localizationPrefix = "JsonOutput.Injection.", groups = {  "GENERAL", "KEY", "FIELDS" } )
 public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
     private static Class<?> PKG = JsonOutputMeta.class; // for i18n purposes, needed by Translator2!!
 
     /**
      * Operations type
      */
+    @Injection( name = "OPERATION", group = "GENERAL" )
     private int operationType;
 
     /**
@@ -90,20 +99,25 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
     /**
      * The encoding to use for reading: null or empty string means system default encoding
      */
+    @Injection( name = "ENCODING", group = "GENERAL" )
     private String encoding;
 
     /**
      * The name value containing the resulting Json fragment
      */
+    @Injection( name = "OUTPUT_VALUE", group = "GENERAL" )
     private String outputValue;
 
     /**
      * The name of the json bloc
      */
+    @Injection( name = "JSON_BLOC_NAME", group = "GENERAL" )
     private String jsonBloc;
 
+    @Injection( name = "NR_ROWS_IN_BLOC", group = "GENERAL" )
     private String nrRowsInBloc;
 
+    @Injection( name = "BLOC_KEY_NAME", group = "GENERAL" )
     private String blockKeyName;
 
 
@@ -112,33 +126,40 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
     /**
      * The output fields
      */
+    @InjectionDeep
     private JsonOutputField[] outputFields;
 
+    @Injection( name = "ADD_TO_RESULT", group = "GENERAL" )
     private boolean AddToResult;
 
     /**
      * Whether to push the output into the output of a servlet with the executeTrans Carte/DI-Server servlet
      */
+    @Injection( name = "PASS_TO_SERVLET", group = "GENERAL" )
     private boolean servletOutput;
 
     /**
      * The base name of the output file
      */
+    @Injection( name = "FILE_NAME", group = "GENERAL" )
     private String fileName;
 
     /**
      * The file extention in case of a generated filename
      */
+    @Injection( name = "EXTENSION", group = "GENERAL" )
     private String extension;
 
     /**
      * Flag to indicate the we want to append to the end of an existing file (if it exists)
      */
+    @Injection( name = "APPEND", group = "GENERAL" )
     private boolean fileAppended;
 
     /**
-     * Flag to indicate to forse unmarshall to JSON Arrays even with a single occurrence of list
+     * Flag to indicate to force unmarshall to JSON Arrays even with a single occurrence in a list
      */
+    @Injection( name = "FORCE_JSON_ARRAYS", group = "GENERAL" )
     private boolean useArrayWithSingleInstance;
 
     /**
@@ -164,20 +185,21 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
     /**
      * Flag: create parent folder if needed
      */
+    @Injection( name = "CREATE_PARENT_FOLDER", group = "GENERAL" )
     private boolean createparentfolder;
 
-    private boolean DoNotOpenNewFileInit;
+    private boolean doNotOpenNewFileInit;
 
     public JsonOutputMeta() {
         super(); // allocate BaseStepMeta
     }
 
     public boolean isDoNotOpenNewFileInit() {
-        return DoNotOpenNewFileInit;
+        return doNotOpenNewFileInit;
     }
 
     public void setDoNotOpenNewFileInit(boolean DoNotOpenNewFileInit) {
-        this.DoNotOpenNewFileInit = DoNotOpenNewFileInit;
+        this.doNotOpenNewFileInit = DoNotOpenNewFileInit;
     }
 
     /**
@@ -374,7 +396,7 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
             partNrInFilename = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "file", "haspartno"));
             dateInFilename = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "file", "add_date"));
             timeInFilename = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "file", "add_time"));
-            DoNotOpenNewFileInit = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "file", "DoNotOpenNewFileInit"));
+            doNotOpenNewFileInit = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "file", "doNotOpenNewFileInit"));
             servletOutput = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "file", "servlet_output"));
 
             Node fields = XMLHandler.getSubNode(stepnode, "fields");
@@ -445,7 +467,7 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
         retval.append("      ").append(XMLHandler.addTagValue("add_date", dateInFilename));
         retval.append("      ").append(XMLHandler.addTagValue("add_time", timeInFilename));
         retval.append("      ").append(XMLHandler.addTagValue("create_parent_folder", createparentfolder));
-        retval.append("      ").append(XMLHandler.addTagValue("DoNotOpenNewFileInit", DoNotOpenNewFileInit));
+        retval.append("      ").append(XMLHandler.addTagValue("doNotOpenNewFileInit", doNotOpenNewFileInit));
         retval.append("      ").append(XMLHandler.addTagValue("servlet_output", servletOutput));
         retval.append("      </file>" + Const.CR);
 
@@ -487,7 +509,7 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
             dateInFilename = rep.getStepAttributeBoolean(id_step, "file_add_date");
             timeInFilename = rep.getStepAttributeBoolean(id_step, "file_add_time");
             createparentfolder = rep.getStepAttributeBoolean(id_step, "create_parent_folder");
-            DoNotOpenNewFileInit = rep.getStepAttributeBoolean(id_step, "DoNotOpenNewFileInit");
+            doNotOpenNewFileInit = rep.getStepAttributeBoolean(id_step, "doNotOpenNewFileInit");
             servletOutput = rep.getStepAttributeBoolean(id_step, "file_servlet_output");
 
             int nrfields = rep.countNrStepAttributes(id_step, "field_name");
@@ -536,7 +558,7 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
             rep.saveStepAttribute(id_transformation, id_step, "file_add_date", dateInFilename);
             rep.saveStepAttribute(id_transformation, id_step, "file_add_time", timeInFilename);
             rep.saveStepAttribute(id_transformation, id_step, "create_parent_folder", createparentfolder);
-            rep.saveStepAttribute(id_transformation, id_step, "DoNotOpenNewFileInit", DoNotOpenNewFileInit);
+            rep.saveStepAttribute(id_transformation, id_step, "doNotOpenNewFileInit", doNotOpenNewFileInit);
             rep.saveStepAttribute(id_transformation, id_step, "file_servlet_output", servletOutput);
 
             for (int i = 0; i < outputFields.length; i++) {

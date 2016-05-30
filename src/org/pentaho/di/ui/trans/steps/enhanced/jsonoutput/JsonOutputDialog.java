@@ -75,9 +75,8 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
     private CTabFolder wTabFolder;
     private FormData fdTabFolder;
 
-    private CTabItem wGeneralTab, wFieldsTab;
-
-    private FormData fdGeneralComp, fdFieldsComp;
+    private CTabItem wGeneralTab, wFieldsTab, wKeyConfigTab;
+    private FormData fdGeneralComp, fdFieldsComp, fdConfigComp;
 
     private Label wlEncoding;
     private ComboVar wEncoding;
@@ -227,7 +226,7 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
 
         FormLayout GeneralLayout = new FormLayout();
         GeneralLayout.marginWidth = 3;
-        GeneralLayout.marginHeight = 3;
+        GeneralLayout.marginHeight = 20;
 
         Composite wGeneralComp = new Composite(wTabFolder, SWT.NONE);
         props.setLook(wGeneralComp);
@@ -259,439 +258,8 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
             }
         });
 
-        // Connection grouping?
-        // ////////////////////////
-        // START OF Settings GROUP
-        //
-
-        wSettings = new Group(wGeneralComp, SWT.SHADOW_NONE);
-        props.setLook(wSettings);
-        wSettings.setText(BaseMessages.getString(PKG, "JsonOutputDialog.Group.Settings.Label"));
-
-        FormLayout groupFileLayout = new FormLayout();
-        groupFileLayout.marginWidth = 10;
-        groupFileLayout.marginHeight = 10;
-        wSettings.setLayout(groupFileLayout);
-
-        wlBlocName = new Label(wSettings, SWT.RIGHT);
-        wlBlocName.setText(BaseMessages.getString(PKG, "JsonOutputDialog.BlocName.Label"));
-        props.setLook(wlBlocName);
-        fdlBlocName = new FormData();
-        fdlBlocName.left = new FormAttachment(0, 0);
-        fdlBlocName.top = new FormAttachment(wOperation, margin);
-        fdlBlocName.right = new FormAttachment(middle, -margin);
-        wlBlocName.setLayoutData(fdlBlocName);
-        wBlocName = new TextVar(transMeta, wSettings, SWT.BORDER | SWT.READ_ONLY);
-        wBlocName.setEditable(true);
-        props.setLook(wBlocName);
-        wBlocName.addModifyListener(lsMod);
-        fdBlocName = new FormData();
-        fdBlocName.left = new FormAttachment(middle, 0);
-        fdBlocName.top = new FormAttachment(wOperation, margin);
-        fdBlocName.right = new FormAttachment(100, 0);
-        wBlocName.setLayoutData(fdBlocName);
-
-        // Loop block key name
-        wlBlocKeyName = new Label(wSettings, SWT.RIGHT);
-        wlBlocKeyName.setText(BaseMessages.getString(PKG, "JsonOutputDialog.BlocKeyName.Label"));
-        props.setLook(wlBlocKeyName);
-        fdlBlocKeyName = new FormData();
-        fdlBlocKeyName.left = new FormAttachment(0, 0);
-        fdlBlocKeyName.top = new FormAttachment(wBlocName, margin);
-        fdlBlocKeyName.right = new FormAttachment(middle, -margin);
-        wlBlocKeyName.setLayoutData(fdlBlocKeyName);
-        wBlocKeyName = new TextVar(transMeta, wSettings, SWT.BORDER | SWT.READ_ONLY);
-        wBlocKeyName.setEditable(true);
-        props.setLook(wBlocKeyName);
-        wBlocKeyName.addModifyListener(lsMod);
-        fdBlocKeyName = new FormData();
-        fdBlocKeyName.left = new FormAttachment(middle, 0);
-        fdBlocKeyName.top = new FormAttachment(wBlocName, margin);
-        fdBlocKeyName.right = new FormAttachment(100, 0);
-        wBlocKeyName.setLayoutData(fdBlocKeyName);
-
-        wlNrRowsInBloc = new Label(wSettings, SWT.RIGHT);
-        wlNrRowsInBloc.setText(BaseMessages.getString(PKG, "JsonOutputDialog.NrRowsInBloc.Label"));
-        props.setLook(wlNrRowsInBloc);
-        fdlNrRowsInBloc = new FormData();
-        fdlNrRowsInBloc.left = new FormAttachment(0, 0);
-        fdlNrRowsInBloc.top = new FormAttachment(wBlocKeyName, margin);
-        fdlNrRowsInBloc.right = new FormAttachment(middle, -margin);
-        wlNrRowsInBloc.setLayoutData(fdlNrRowsInBloc);
-        wNrRowsInBloc = new TextVar(transMeta, wSettings, SWT.BORDER | SWT.READ_ONLY);
-        wNrRowsInBloc.setToolTipText(BaseMessages.getString(PKG, "JsonOutputDialog.NrRowsInBloc.ToolTip"));
-        wNrRowsInBloc.setEditable(true);
-        props.setLook(wNrRowsInBloc);
-        wNrRowsInBloc.addModifyListener(lsMod);
-        fdNrRowsInBloc = new FormData();
-        fdNrRowsInBloc.left = new FormAttachment(middle, 0);
-        fdNrRowsInBloc.top = new FormAttachment(wBlocKeyName, margin);
-        fdNrRowsInBloc.right = new FormAttachment(100, 0);
-        wNrRowsInBloc.setLayoutData(fdNrRowsInBloc);
-
-        wlOutputValue = new Label(wSettings, SWT.RIGHT);
-        wlOutputValue.setText(BaseMessages.getString(PKG, "JsonOutputDialog.OutputValue.Label"));
-        props.setLook(wlOutputValue);
-        fdlOutputValue = new FormData();
-        fdlOutputValue.left = new FormAttachment(0, 0);
-        fdlOutputValue.top = new FormAttachment(wNrRowsInBloc, margin);
-        fdlOutputValue.right = new FormAttachment(middle, -margin);
-        wlOutputValue.setLayoutData(fdlOutputValue);
-        wOutputValue = new TextVar(transMeta, wSettings, SWT.BORDER | SWT.READ_ONLY);
-        wOutputValue.setEditable(true);
-        props.setLook(wOutputValue);
-        wOutputValue.addModifyListener(lsMod);
-        fdOutputValue = new FormData();
-        fdOutputValue.left = new FormAttachment(middle, 0);
-        fdOutputValue.top = new FormAttachment(wNrRowsInBloc, margin);
-        fdOutputValue.right = new FormAttachment(100, 0);
-        wOutputValue.setLayoutData(fdOutputValue);
-
-        // ////////////////////////// start of compatibility mode
-        wlUseArrayWithSingleInstance = new Label(wSettings, SWT.RIGHT);
-        wlUseArrayWithSingleInstance.setText(BaseMessages.getString(PKG, "JsonOutputDialog.UseArrayWihSingleInstanceMode.Label"));
-        props.setLook(wlUseArrayWithSingleInstance);
-        fdlUseArrayWithSingleInstance = new FormData();
-        fdlUseArrayWithSingleInstance.left = new FormAttachment(0, 0);
-        fdlUseArrayWithSingleInstance.top = new FormAttachment(wOutputValue, margin);
-        fdlUseArrayWithSingleInstance.right = new FormAttachment(middle, -margin);
-        wlUseArrayWithSingleInstance.setLayoutData(fdlUseArrayWithSingleInstance);
-        wUseArrayWithSingleInstance = new Button(wSettings, SWT.CHECK);
-        wUseArrayWithSingleInstance.setToolTipText(BaseMessages.getString(PKG, "JsonOutputDialog.CompatibilityMode.Tooltip"));
-        props.setLook(wUseArrayWithSingleInstance);
-        fdUseArrayWithSingleInstance = new FormData();
-        fdUseArrayWithSingleInstance.left = new FormAttachment(middle, 0);
-        fdUseArrayWithSingleInstance.top = new FormAttachment(wOutputValue, margin);
-        fdUseArrayWithSingleInstance.right = new FormAttachment(100, 0);
-        wUseArrayWithSingleInstance.setLayoutData(fdUseArrayWithSingleInstance);
-        wUseArrayWithSingleInstance.addSelectionListener(new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent e) {
-                input.setChanged();
-            }
-        });
-
-        fdSettings = new FormData();
-        fdSettings.left = new FormAttachment(0, margin);
-        fdSettings.top = new FormAttachment(wOperation, 2 * margin);
-        fdSettings.right = new FormAttachment(100, -margin);
-        wSettings.setLayoutData(fdSettings);
-
-        // ///////////////////////////////////////////////////////////
-        // / END OF Settings GROUP
-        // ///////////////////////////////////////////////////////////
-
-        // Connection grouping?
-        // ////////////////////////
-        // START OF FileName GROUP
-        //
-
-        wFileName = new Group(wGeneralComp, SWT.SHADOW_NONE);
-        props.setLook(wFileName);
-        wFileName.setText(BaseMessages.getString(PKG, "JsonOutputDialog.Group.File.Label"));
-
-        FormLayout groupfilenameayout = new FormLayout();
-        groupfilenameayout.marginWidth = 10;
-        groupfilenameayout.marginHeight = 10;
-        wFileName.setLayout(groupfilenameayout);
-
-        // Filename line
-        wlFilename = new Label(wFileName, SWT.RIGHT);
-        wlFilename.setText(BaseMessages.getString(PKG, "JsonOutputDialog.Filename.Label"));
-        props.setLook(wlFilename);
-        fdlFilename = new FormData();
-        fdlFilename.left = new FormAttachment(0, 0);
-        fdlFilename.top = new FormAttachment(wSettings, margin);
-        fdlFilename.right = new FormAttachment(middle, -margin);
-        wlFilename.setLayoutData(fdlFilename);
-
-        wbFilename = new Button(wFileName, SWT.PUSH | SWT.CENTER);
-        props.setLook(wbFilename);
-        wbFilename.setText(BaseMessages.getString(PKG, "System.Button.Browse"));
-        fdbFilename = new FormData();
-        fdbFilename.right = new FormAttachment(100, 0);
-        fdbFilename.top = new FormAttachment(wSettings, 0);
-        wbFilename.setLayoutData(fdbFilename);
-        wbFilename.addSelectionListener(new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent e) {
-                FileDialog dialog = new FileDialog(shell, SWT.SAVE);
-                dialog.setFilterExtensions(new String[]{"*.js", "*.JS", "*"});
-                if (wFilename.getText() != null) {
-                    dialog.setFileName(transMeta.environmentSubstitute(wFilename.getText()));
-                }
-                dialog.setFilterNames(new String[]{BaseMessages.getString(PKG, "System.FileType.TextFiles"),
-                        BaseMessages.getString(PKG, "System.FileType.CSVFiles"),
-                        BaseMessages.getString(PKG, "System.FileType.AllFiles")});
-                if (dialog.open() != null) {
-                    String extension = wExtension.getText();
-                    if (extension != null && dialog.getFileName() != null && dialog.getFileName().endsWith("." + extension)) {
-                        // The extension is filled in and matches the end
-                        // of the selected file => Strip off the extension.
-                        String fileName = dialog.getFileName();
-                        wFilename.setText(dialog.getFilterPath() + System.getProperty("file.separator")
-                                + fileName.substring(0, fileName.length() - (extension.length() + 1)));
-                    } else {
-                        wFilename.setText(dialog.getFilterPath() + System.getProperty("file.separator") + dialog.getFileName());
-                    }
-                }
-            }
-        });
-        wFilename = new TextVar(transMeta, wFileName, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
-        props.setLook(wFilename);
-        wFilename.addModifyListener(lsMod);
-        fdFilename = new FormData();
-        fdFilename.left = new FormAttachment(middle, 0);
-        fdFilename.top = new FormAttachment(wOutputValue, margin);
-        fdFilename.right = new FormAttachment(wbFilename, -margin);
-        wFilename.setLayoutData(fdFilename);
-
-        // Append to end of file?
-        wlAppend = new Label(wFileName, SWT.RIGHT);
-        wlAppend.setText(BaseMessages.getString(PKG, "JsonOutputDialog.Append.Label"));
-        props.setLook(wlAppend);
-        fdlAppend = new FormData();
-        fdlAppend.left = new FormAttachment(0, 0);
-        fdlAppend.top = new FormAttachment(wFilename, margin);
-        fdlAppend.right = new FormAttachment(middle, -margin);
-        wlAppend.setLayoutData(fdlAppend);
-        wAppend = new Button(wFileName, SWT.CHECK);
-        wAppend.setToolTipText(BaseMessages.getString(PKG, "JsonOutputDialog.Append.Tooltip"));
-        props.setLook(wAppend);
-        fdAppend = new FormData();
-        fdAppend.left = new FormAttachment(middle, 0);
-        fdAppend.top = new FormAttachment(wFilename, margin);
-        fdAppend.right = new FormAttachment(100, 0);
-        wAppend.setLayoutData(fdAppend);
-        wAppend.addSelectionListener(new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent e) {
-                input.setChanged();
-            }
-        });
-
-        // Create Parent Folder
-        wlCreateParentFolder = new Label(wFileName, SWT.RIGHT);
-        wlCreateParentFolder.setText(BaseMessages.getString(PKG, "JsonOutputDialog.CreateParentFolder.Label"));
-        props.setLook(wlCreateParentFolder);
-        fdlCreateParentFolder = new FormData();
-        fdlCreateParentFolder.left = new FormAttachment(0, 0);
-        fdlCreateParentFolder.top = new FormAttachment(wAppend, margin);
-        fdlCreateParentFolder.right = new FormAttachment(middle, -margin);
-        wlCreateParentFolder.setLayoutData(fdlCreateParentFolder);
-        wCreateParentFolder = new Button(wFileName, SWT.CHECK);
-        wCreateParentFolder.setToolTipText(BaseMessages.getString(PKG, "JsonOutputDialog.CreateParentFolder.Tooltip"));
-        props.setLook(wCreateParentFolder);
-        fdCreateParentFolder = new FormData();
-        fdCreateParentFolder.left = new FormAttachment(middle, 0);
-        fdCreateParentFolder.top = new FormAttachment(wAppend, margin);
-        fdCreateParentFolder.right = new FormAttachment(100, 0);
-        wCreateParentFolder.setLayoutData(fdCreateParentFolder);
-        wCreateParentFolder.addSelectionListener(new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent e) {
-                input.setChanged();
-            }
-        });
-
-        // Open new File at Init
-        wlDoNotOpenNewFileInit = new Label(wFileName, SWT.RIGHT);
-        wlDoNotOpenNewFileInit.setText(BaseMessages.getString(PKG, "JsonOutputDialog.DoNotOpenNewFileInit.Label"));
-        props.setLook(wlDoNotOpenNewFileInit);
-        fdlDoNotOpenNewFileInit = new FormData();
-        fdlDoNotOpenNewFileInit.left = new FormAttachment(0, 0);
-        fdlDoNotOpenNewFileInit.top = new FormAttachment(wCreateParentFolder, margin);
-        fdlDoNotOpenNewFileInit.right = new FormAttachment(middle, -margin);
-        wlDoNotOpenNewFileInit.setLayoutData(fdlDoNotOpenNewFileInit);
-        wDoNotOpenNewFileInit = new Button(wFileName, SWT.CHECK);
-        wDoNotOpenNewFileInit
-                .setToolTipText(BaseMessages.getString(PKG, "JsonOutputDialog.DoNotOpenNewFileInit.Tooltip"));
-        props.setLook(wDoNotOpenNewFileInit);
-        fdDoNotOpenNewFileInit = new FormData();
-        fdDoNotOpenNewFileInit.left = new FormAttachment(middle, 0);
-        fdDoNotOpenNewFileInit.top = new FormAttachment(wCreateParentFolder, margin);
-        fdDoNotOpenNewFileInit.right = new FormAttachment(100, 0);
-        wDoNotOpenNewFileInit.setLayoutData(fdDoNotOpenNewFileInit);
-        wDoNotOpenNewFileInit.addSelectionListener(new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent e) {
-                input.setChanged();
-            }
-        });
-
-        // Extension line
-        wlExtension = new Label(wFileName, SWT.RIGHT);
-        wlExtension.setText(BaseMessages.getString(PKG, "System.Label.Extension"));
-        props.setLook(wlExtension);
-        fdlExtension = new FormData();
-        fdlExtension.left = new FormAttachment(0, 0);
-        fdlExtension.top = new FormAttachment(wDoNotOpenNewFileInit, margin);
-        fdlExtension.right = new FormAttachment(middle, -margin);
-        wlExtension.setLayoutData(fdlExtension);
-
-        wExtension = new TextVar(transMeta, wFileName, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
-        props.setLook(wExtension);
-        wExtension.addModifyListener(lsMod);
-        fdExtension = new FormData();
-        fdExtension.left = new FormAttachment(middle, 0);
-        fdExtension.top = new FormAttachment(wDoNotOpenNewFileInit, margin);
-        fdExtension.right = new FormAttachment(100, -margin);
-        wExtension.setLayoutData(fdExtension);
-
-        wlEncoding = new Label(wFileName, SWT.RIGHT);
-        wlEncoding.setText(BaseMessages.getString(PKG, "JsonOutputDialog.Encoding.Label"));
-        props.setLook(wlEncoding);
-        fdlEncoding = new FormData();
-        fdlEncoding.left = new FormAttachment(0, 0);
-        fdlEncoding.top = new FormAttachment(wExtension, margin);
-        fdlEncoding.right = new FormAttachment(middle, -margin);
-        wlEncoding.setLayoutData(fdlEncoding);
-        wEncoding = new ComboVar(transMeta, wFileName, SWT.BORDER | SWT.READ_ONLY);
-        wEncoding.setEditable(true);
-        props.setLook(wEncoding);
-        wEncoding.addModifyListener(lsMod);
-        fdEncoding = new FormData();
-        fdEncoding.left = new FormAttachment(middle, 0);
-        fdEncoding.top = new FormAttachment(wExtension, margin);
-        fdEncoding.right = new FormAttachment(100, 0);
-        wEncoding.setLayoutData(fdEncoding);
-        wEncoding.addFocusListener(new FocusListener() {
-            public void focusLost(org.eclipse.swt.events.FocusEvent e) {
-            }
-
-            public void focusGained(org.eclipse.swt.events.FocusEvent e) {
-                Cursor busy = new Cursor(shell.getDisplay(), SWT.CURSOR_WAIT);
-                shell.setCursor(busy);
-                setEncodings();
-                shell.setCursor(null);
-                busy.dispose();
-            }
-        });
-
-        // Output to servlet (browser, ws)
-        //
-        wlServletOutput = new Label(wFileName, SWT.RIGHT);
-        wlServletOutput.setText(BaseMessages.getString(PKG, "JsonOutputDialog.ServletOutput.Label"));
-        props.setLook(wlServletOutput);
-        fdlServletOutput = new FormData();
-        fdlServletOutput.left = new FormAttachment(0, 0);
-        fdlServletOutput.top = new FormAttachment(wEncoding, margin);
-        fdlServletOutput.right = new FormAttachment(middle, -margin);
-        wlServletOutput.setLayoutData(fdlServletOutput);
-        wServletOutput = new Button(wFileName, SWT.CHECK);
-        wServletOutput.setToolTipText(BaseMessages.getString(PKG, "JsonOutputDialog.ServletOutput.Tooltip"));
-        props.setLook(wServletOutput);
-        fdServletOutput = new FormData();
-        fdServletOutput.left = new FormAttachment(middle, 0);
-        fdServletOutput.top = new FormAttachment(wEncoding, margin);
-        fdServletOutput.right = new FormAttachment(100, 0);
-        wServletOutput.setLayoutData(fdServletOutput);
-        wServletOutput.addSelectionListener(new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent e) {
-                input.setChanged();
-                setFlagsServletOption();
-            }
-        });
-
-        // Create multi-part file?
-        wlAddDate = new Label(wFileName, SWT.RIGHT);
-        wlAddDate.setText(BaseMessages.getString(PKG, "JsonOutputDialog.AddDate.Label"));
-        props.setLook(wlAddDate);
-        fdlAddDate = new FormData();
-        fdlAddDate.left = new FormAttachment(0, 0);
-        fdlAddDate.top = new FormAttachment(wServletOutput, margin);
-        fdlAddDate.right = new FormAttachment(middle, -margin);
-        wlAddDate.setLayoutData(fdlAddDate);
-        wAddDate = new Button(wFileName, SWT.CHECK);
-        props.setLook(wAddDate);
-        fdAddDate = new FormData();
-        fdAddDate.left = new FormAttachment(middle, 0);
-        fdAddDate.top = new FormAttachment(wServletOutput, margin);
-        fdAddDate.right = new FormAttachment(100, 0);
-        wAddDate.setLayoutData(fdAddDate);
-        wAddDate.addSelectionListener(new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent e) {
-                input.setChanged();
-            }
-        });
-        // Create multi-part file?
-        wlAddTime = new Label(wFileName, SWT.RIGHT);
-        wlAddTime.setText(BaseMessages.getString(PKG, "JsonOutputDialog.AddTime.Label"));
-        props.setLook(wlAddTime);
-        fdlAddTime = new FormData();
-        fdlAddTime.left = new FormAttachment(0, 0);
-        fdlAddTime.top = new FormAttachment(wAddDate, margin);
-        fdlAddTime.right = new FormAttachment(middle, -margin);
-        wlAddTime.setLayoutData(fdlAddTime);
-        wAddTime = new Button(wFileName, SWT.CHECK);
-        props.setLook(wAddTime);
-        fdAddTime = new FormData();
-        fdAddTime.left = new FormAttachment(middle, 0);
-        fdAddTime.top = new FormAttachment(wAddDate, margin);
-        fdAddTime.right = new FormAttachment(100, 0);
-        wAddTime.setLayoutData(fdAddTime);
-        wAddTime.addSelectionListener(new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent e) {
-                input.setChanged();
-            }
-        });
-
-        wbShowFiles = new Button(wFileName, SWT.PUSH | SWT.CENTER);
-        props.setLook(wbShowFiles);
-        wbShowFiles.setText(BaseMessages.getString(PKG, "JsonOutputDialog.ShowFiles.Button"));
-        fdbShowFiles = new FormData();
-        fdbShowFiles.left = new FormAttachment(middle, 0);
-        fdbShowFiles.top = new FormAttachment(wAddTime, margin * 2);
-        wbShowFiles.setLayoutData(fdbShowFiles);
-        wbShowFiles.addSelectionListener(new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent e) {
-                JsonOutputMeta tfoi = new JsonOutputMeta();
-                getInfo(tfoi);
-                String[] files = tfoi.getFiles(transMeta.environmentSubstitute(wFilename.getText()));
-                if (files != null && files.length > 0) {
-                    EnterSelectionDialog esd =
-                            new EnterSelectionDialog(shell, files, BaseMessages.getString(PKG,
-                                    "JsonOutputDialog.SelectOutputFiles.DialogTitle"), BaseMessages.getString(PKG,
-                                    "JsonOutputDialog.SelectOutputFiles.DialogMessage"));
-                    esd.setViewOnly();
-                    esd.open();
-                } else {
-                    MessageBox mb = new MessageBox(shell, SWT.OK | SWT.ICON_ERROR);
-                    mb.setMessage(BaseMessages.getString(PKG, "JsonOutputDialog.NoFilesFound.DialogMessage"));
-                    mb.setText(BaseMessages.getString(PKG, "System.DialogTitle.Error"));
-                    mb.open();
-                }
-            }
-        });
-
-        // Add File to the result files name
-        wlAddToResult = new Label(wFileName, SWT.RIGHT);
-        wlAddToResult.setText(BaseMessages.getString(PKG, "JsonOutputDialog.AddFileToResult.Label"));
-        props.setLook(wlAddToResult);
-        fdlAddToResult = new FormData();
-        fdlAddToResult.left = new FormAttachment(0, 0);
-        fdlAddToResult.top = new FormAttachment(wbShowFiles, margin);
-        fdlAddToResult.right = new FormAttachment(middle, -margin);
-        wlAddToResult.setLayoutData(fdlAddToResult);
-        wAddToResult = new Button(wFileName, SWT.CHECK);
-        wAddToResult.setToolTipText(BaseMessages.getString(PKG, "JsonOutputDialog.AddFileToResult.Tooltip"));
-        props.setLook(wAddToResult);
-        fdAddToResult = new FormData();
-        fdAddToResult.left = new FormAttachment(middle, 0);
-        fdAddToResult.top = new FormAttachment(wbShowFiles, margin);
-        fdAddToResult.right = new FormAttachment(100, 0);
-        wAddToResult.setLayoutData(fdAddToResult);
-        SelectionAdapter lsSelR = new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent arg0) {
-                input.setChanged();
-            }
-        };
-        wAddToResult.addSelectionListener(lsSelR);
-
-        fdFileName = new FormData();
-        fdFileName.left = new FormAttachment(0, margin);
-        fdFileName.top = new FormAttachment(wSettings, 2 * margin);
-        fdFileName.right = new FormAttachment(100, -margin);
-        wFileName.setLayoutData(fdFileName);
-
-        // ///////////////////////////////////////////////////////////
-        // / END OF FileName GROUP
-        // ///////////////////////////////////////////////////////////
+        createSettingsGroup(lsMod, middle, margin, wGeneralComp);
+        createFilenameGroup(lsMod, middle, margin, wGeneralComp);
 
         fdGeneralComp = new FormData();
         fdGeneralComp.left = new FormAttachment(0, 0);
@@ -700,6 +268,7 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
         fdGeneralComp.bottom = new FormAttachment(100, 0);
         wGeneralComp.setLayoutData(fdGeneralComp);
 
+
         wGeneralComp.layout();
         wGeneralTab.setControl(wGeneralComp);
 
@@ -707,8 +276,23 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
         // / END OF General TAB
         // ///////////////////////////////////////////////////////////
 
+        // START OF Key Configuration TAB///
+        wKeyConfigTab = new CTabItem(wTabFolder, SWT.NONE);
+        wKeyConfigTab.setText(BaseMessages.getString(PKG, "JsonOutputDialog.KeyConfigTab.TabTitle"));
+
+        FormLayout keyConfigLayout = new FormLayout();
+        keyConfigLayout.marginWidth = 3;
+        keyConfigLayout.marginHeight = 3;
+
+        Composite wKeyConfigComp = new Composite(wTabFolder, SWT.NONE);
+        props.setLook(wKeyConfigComp);
+
+        wKeyConfigComp.setLayout(keyConfigLayout);
+        wKeyConfigComp.layout();
+        wKeyConfigTab.setControl(wKeyConfigComp);
+        // END OF Key Configuration TAB
+
         // Fields tab...
-        //
         wFieldsTab = new CTabItem(wTabFolder, SWT.NONE);
         wFieldsTab.setText(BaseMessages.getString(PKG, "JsonOutputDialog.FieldsTab.TabTitle"));
 
@@ -866,6 +450,451 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
             }
         }
         return stepname;
+    }
+
+    private void createSettingsGroup(ModifyListener lsMod, int middle, int margin, Composite wGeneralComp) {
+        // ////////////////////////
+        // START OF Settings GROUP
+        //
+
+        wSettings = new Group(wGeneralComp, SWT.SHADOW_NONE);
+        props.setLook(wSettings);
+        wSettings.setText(BaseMessages.getString(PKG, "JsonOutputDialog.Group.Settings.Label"));
+
+        FormLayout groupFileLayout = new FormLayout();
+        groupFileLayout.marginWidth = 10;
+        groupFileLayout.marginHeight = 10;
+        wSettings.setLayout(groupFileLayout);
+
+        wlBlocName = new Label(wSettings, SWT.RIGHT);
+        wlBlocName.setText(BaseMessages.getString(PKG, "JsonOutputDialog.BlocName.Label"));
+        props.setLook(wlBlocName);
+        fdlBlocName = new FormData();
+        fdlBlocName.left = new FormAttachment(0, 0);
+        fdlBlocName.top = new FormAttachment(wOperation, margin);
+        fdlBlocName.right = new FormAttachment(middle, -margin);
+        wlBlocName.setLayoutData(fdlBlocName);
+        wBlocName = new TextVar(transMeta, wSettings, SWT.BORDER | SWT.READ_ONLY);
+        wBlocName.setEditable(true);
+        props.setLook(wBlocName);
+        wBlocName.addModifyListener(lsMod);
+        fdBlocName = new FormData();
+        fdBlocName.left = new FormAttachment(middle, 0);
+        fdBlocName.top = new FormAttachment(wOperation, margin);
+        fdBlocName.right = new FormAttachment(100, 0);
+        wBlocName.setLayoutData(fdBlocName);
+
+        // Loop block key name
+        wlBlocKeyName = new Label(wSettings, SWT.RIGHT);
+        wlBlocKeyName.setText(BaseMessages.getString(PKG, "JsonOutputDialog.BlocKeyName.Label"));
+        props.setLook(wlBlocKeyName);
+        fdlBlocKeyName = new FormData();
+        fdlBlocKeyName.left = new FormAttachment(0, 0);
+        fdlBlocKeyName.top = new FormAttachment(wBlocName, margin);
+        fdlBlocKeyName.right = new FormAttachment(middle, -margin);
+        wlBlocKeyName.setLayoutData(fdlBlocKeyName);
+        wBlocKeyName = new TextVar(transMeta, wSettings, SWT.BORDER | SWT.READ_ONLY);
+        wBlocKeyName.setEditable(true);
+        props.setLook(wBlocKeyName);
+        wBlocKeyName.addModifyListener(lsMod);
+        fdBlocKeyName = new FormData();
+        fdBlocKeyName.left = new FormAttachment(middle, 0);
+        fdBlocKeyName.top = new FormAttachment(wBlocName, margin);
+        fdBlocKeyName.right = new FormAttachment(100, 0);
+        wBlocKeyName.setLayoutData(fdBlocKeyName);
+
+        wlNrRowsInBloc = new Label(wSettings, SWT.RIGHT);
+        wlNrRowsInBloc.setText(BaseMessages.getString(PKG, "JsonOutputDialog.NrRowsInBloc.Label"));
+        props.setLook(wlNrRowsInBloc);
+        fdlNrRowsInBloc = new FormData();
+        fdlNrRowsInBloc.left = new FormAttachment(0, 0);
+        fdlNrRowsInBloc.top = new FormAttachment(wBlocKeyName, margin);
+        fdlNrRowsInBloc.right = new FormAttachment(middle, -margin);
+        wlNrRowsInBloc.setLayoutData(fdlNrRowsInBloc);
+        wNrRowsInBloc = new TextVar(transMeta, wSettings, SWT.BORDER | SWT.READ_ONLY);
+        wNrRowsInBloc.setToolTipText(BaseMessages.getString(PKG, "JsonOutputDialog.NrRowsInBloc.ToolTip"));
+        wNrRowsInBloc.setEditable(true);
+        props.setLook(wNrRowsInBloc);
+        wNrRowsInBloc.addModifyListener(lsMod);
+        fdNrRowsInBloc = new FormData();
+        fdNrRowsInBloc.left = new FormAttachment(middle, 0);
+        fdNrRowsInBloc.top = new FormAttachment(wBlocKeyName, margin);
+        fdNrRowsInBloc.right = new FormAttachment(100, 0);
+        wNrRowsInBloc.setLayoutData(fdNrRowsInBloc);
+
+        wlOutputValue = new Label(wSettings, SWT.RIGHT);
+        wlOutputValue.setText(BaseMessages.getString(PKG, "JsonOutputDialog.OutputValue.Label"));
+        props.setLook(wlOutputValue);
+        fdlOutputValue = new FormData();
+        fdlOutputValue.left = new FormAttachment(0, 0);
+        fdlOutputValue.top = new FormAttachment(wNrRowsInBloc, margin);
+        fdlOutputValue.right = new FormAttachment(middle, -margin);
+        wlOutputValue.setLayoutData(fdlOutputValue);
+        wOutputValue = new TextVar(transMeta, wSettings, SWT.BORDER | SWT.READ_ONLY);
+        wOutputValue.setEditable(true);
+        props.setLook(wOutputValue);
+        wOutputValue.addModifyListener(lsMod);
+        fdOutputValue = new FormData();
+        fdOutputValue.left = new FormAttachment(middle, 0);
+        fdOutputValue.top = new FormAttachment(wNrRowsInBloc, margin);
+        fdOutputValue.right = new FormAttachment(100, 0);
+        wOutputValue.setLayoutData(fdOutputValue);
+
+        // ////////////////////////// start of compatibility mode
+        wlUseArrayWithSingleInstance = new Label(wSettings, SWT.RIGHT);
+        wlUseArrayWithSingleInstance.setText(BaseMessages.getString(PKG, "JsonOutputDialog.UseArrayWihSingleInstanceMode.Label"));
+        props.setLook(wlUseArrayWithSingleInstance);
+        fdlUseArrayWithSingleInstance = new FormData();
+        fdlUseArrayWithSingleInstance.left = new FormAttachment(0, 0);
+        fdlUseArrayWithSingleInstance.top = new FormAttachment(wOutputValue, margin);
+        fdlUseArrayWithSingleInstance.right = new FormAttachment(middle, -margin);
+        wlUseArrayWithSingleInstance.setLayoutData(fdlUseArrayWithSingleInstance);
+        wUseArrayWithSingleInstance = new Button(wSettings, SWT.CHECK);
+        wUseArrayWithSingleInstance.setToolTipText(BaseMessages.getString(PKG, "JsonOutputDialog.CompatibilityMode.Tooltip"));
+        props.setLook(wUseArrayWithSingleInstance);
+        fdUseArrayWithSingleInstance = new FormData();
+        fdUseArrayWithSingleInstance.left = new FormAttachment(middle, 0);
+        fdUseArrayWithSingleInstance.top = new FormAttachment(wOutputValue, margin);
+        fdUseArrayWithSingleInstance.right = new FormAttachment(100, 0);
+        wUseArrayWithSingleInstance.setLayoutData(fdUseArrayWithSingleInstance);
+        wUseArrayWithSingleInstance.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e) {
+                input.setChanged();
+            }
+        });
+
+        fdSettings = new FormData();
+        fdSettings.left = new FormAttachment(0, margin);
+        fdSettings.top = new FormAttachment(wOperation, 2 * margin);
+        fdSettings.right = new FormAttachment(100, -margin);
+        wSettings.setLayoutData(fdSettings);
+
+        // ///////////////////////////////////////////////////////////
+        // / END OF Settings GROUP
+        // ///////////////////////////////////////////////////////////
+    }
+
+    private void createFilenameGroup(ModifyListener lsMod,
+                                     int middle,
+                                     int margin,
+                                     Composite wGeneralComp) {
+        // Connection grouping?
+        // ////////////////////////
+        // START OF FileName GROUP
+        //
+
+        wFileName = new Group(wGeneralComp, SWT.SHADOW_NONE);
+        props.setLook(wFileName);
+        wFileName.setText(BaseMessages.getString(PKG, "JsonOutputDialog.Group.File.Label"));
+
+        FormLayout groupfilenameayout = new FormLayout();
+        groupfilenameayout.marginWidth = 10;
+        groupfilenameayout.marginHeight = 10;
+        wFileName.setLayout(groupfilenameayout);
+
+        // Filename line
+        wlFilename = new Label(wFileName, SWT.RIGHT);
+        wlFilename.setText(BaseMessages.getString(PKG, "JsonOutputDialog.Filename.Label"));
+        props.setLook(wlFilename);
+        fdlFilename = new FormData();
+        fdlFilename.left = new FormAttachment(0, 0);
+        fdlFilename.top = new FormAttachment(wOperation, margin);
+        fdlFilename.right = new FormAttachment(middle, -margin);
+        wlFilename.setLayoutData(fdlFilename);
+
+        wbFilename = new Button(wFileName, SWT.PUSH | SWT.CENTER);
+        props.setLook(wbFilename);
+        wbFilename.setText(BaseMessages.getString(PKG, "System.Button.Browse"));
+        fdbFilename = new FormData();
+        fdbFilename.right = new FormAttachment(100, 0);
+        fdbFilename.top = new FormAttachment(wSettings, 0);
+        wbFilename.setLayoutData(fdbFilename);
+        wbFilename.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e) {
+                FileDialog dialog = new FileDialog(shell, SWT.SAVE);
+                dialog.setFilterExtensions(new String[]{"*.js", "*.JS", "*"});
+                if (wFilename.getText() != null) {
+                    dialog.setFileName(transMeta.environmentSubstitute(wFilename.getText()));
+                }
+                dialog.setFilterNames(new String[]{BaseMessages.getString(PKG, "System.FileType.TextFiles"),
+                        BaseMessages.getString(PKG, "System.FileType.CSVFiles"),
+                        BaseMessages.getString(PKG, "System.FileType.AllFiles")});
+                if (dialog.open() != null) {
+                    String extension = wExtension.getText();
+                    if (extension != null && dialog.getFileName() != null && dialog.getFileName().endsWith("." + extension)) {
+                        // The extension is filled in and matches the end
+                        // of the selected file => Strip off the extension.
+                        String fileName = dialog.getFileName();
+                        wFilename.setText(dialog.getFilterPath() + System.getProperty("file.separator")
+                                + fileName.substring(0, fileName.length() - (extension.length() + 1)));
+                    } else {
+                        wFilename.setText(dialog.getFilterPath() + System.getProperty("file.separator") + dialog.getFileName());
+                    }
+                }
+            }
+        });
+        wFilename = new TextVar(transMeta, wFileName, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+        props.setLook(wFilename);
+        wFilename.addModifyListener(lsMod);
+        fdFilename = new FormData();
+        fdFilename.left = new FormAttachment(middle, 0);
+        fdFilename.top = new FormAttachment(wOutputValue, margin);
+        fdFilename.right = new FormAttachment(wbFilename, -margin);
+        wFilename.setLayoutData(fdFilename);
+
+        // Append to end of file?
+        wlAppend = new Label(wFileName, SWT.RIGHT);
+        wlAppend.setText(BaseMessages.getString(PKG, "JsonOutputDialog.Append.Label"));
+        props.setLook(wlAppend);
+        fdlAppend = new FormData();
+        fdlAppend.left = new FormAttachment(0, 0);
+        fdlAppend.top = new FormAttachment(wFilename, margin);
+        fdlAppend.right = new FormAttachment(middle, -margin);
+        wlAppend.setLayoutData(fdlAppend);
+        wAppend = new Button(wFileName, SWT.CHECK);
+        wAppend.setToolTipText(BaseMessages.getString(PKG, "JsonOutputDialog.Append.Tooltip"));
+        props.setLook(wAppend);
+        fdAppend = new FormData();
+        fdAppend.left = new FormAttachment(middle, 0);
+        fdAppend.top = new FormAttachment(wFilename, margin);
+        fdAppend.right = new FormAttachment(100, 0);
+        wAppend.setLayoutData(fdAppend);
+        wAppend.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e) {
+                input.setChanged();
+            }
+        });
+
+        // Create Parent Folder
+        wlCreateParentFolder = new Label(wFileName, SWT.RIGHT);
+        wlCreateParentFolder.setText(BaseMessages.getString(PKG, "JsonOutputDialog.CreateParentFolder.Label"));
+        props.setLook(wlCreateParentFolder);
+        fdlCreateParentFolder = new FormData();
+        fdlCreateParentFolder.left = new FormAttachment(0, 0);
+        fdlCreateParentFolder.top = new FormAttachment(wAppend, margin);
+        fdlCreateParentFolder.right = new FormAttachment(middle, -margin);
+        wlCreateParentFolder.setLayoutData(fdlCreateParentFolder);
+        wCreateParentFolder = new Button(wFileName, SWT.CHECK);
+        wCreateParentFolder.setToolTipText(BaseMessages.getString(PKG, "JsonOutputDialog.CreateParentFolder.Tooltip"));
+        props.setLook(wCreateParentFolder);
+        fdCreateParentFolder = new FormData();
+        fdCreateParentFolder.left = new FormAttachment(middle, 0);
+        fdCreateParentFolder.top = new FormAttachment(wAppend, margin);
+        fdCreateParentFolder.right = new FormAttachment(100, 0);
+        wCreateParentFolder.setLayoutData(fdCreateParentFolder);
+        wCreateParentFolder.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e) {
+                input.setChanged();
+            }
+        });
+
+        // Open new File at Init
+        wlDoNotOpenNewFileInit = new Label(wFileName, SWT.RIGHT);
+        wlDoNotOpenNewFileInit.setText(BaseMessages.getString(PKG, "JsonOutputDialog.DoNotOpenNewFileInit.Label"));
+        props.setLook(wlDoNotOpenNewFileInit);
+        fdlDoNotOpenNewFileInit = new FormData();
+        fdlDoNotOpenNewFileInit.left = new FormAttachment(0, 0);
+        fdlDoNotOpenNewFileInit.top = new FormAttachment(wCreateParentFolder, margin);
+        fdlDoNotOpenNewFileInit.right = new FormAttachment(middle, -margin);
+        wlDoNotOpenNewFileInit.setLayoutData(fdlDoNotOpenNewFileInit);
+        wDoNotOpenNewFileInit = new Button(wFileName, SWT.CHECK);
+        wDoNotOpenNewFileInit
+                .setToolTipText(BaseMessages.getString(PKG, "JsonOutputDialog.DoNotOpenNewFileInit.Tooltip"));
+        props.setLook(wDoNotOpenNewFileInit);
+        fdDoNotOpenNewFileInit = new FormData();
+        fdDoNotOpenNewFileInit.left = new FormAttachment(middle, 0);
+        fdDoNotOpenNewFileInit.top = new FormAttachment(wCreateParentFolder, margin);
+        fdDoNotOpenNewFileInit.right = new FormAttachment(100, 0);
+        wDoNotOpenNewFileInit.setLayoutData(fdDoNotOpenNewFileInit);
+        wDoNotOpenNewFileInit.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e) {
+                input.setChanged();
+            }
+        });
+
+        createExtensionLine(lsMod, middle, margin);
+
+
+        // Output to servlet (browser, ws)
+        //
+        wlServletOutput = new Label(wFileName, SWT.RIGHT);
+        wlServletOutput.setText(BaseMessages.getString(PKG, "JsonOutputDialog.ServletOutput.Label"));
+        props.setLook(wlServletOutput);
+        fdlServletOutput = new FormData();
+        fdlServletOutput.left = new FormAttachment(0, 0);
+        fdlServletOutput.top = new FormAttachment(wEncoding, margin);
+        fdlServletOutput.right = new FormAttachment(middle, -margin);
+        wlServletOutput.setLayoutData(fdlServletOutput);
+        wServletOutput = new Button(wFileName, SWT.CHECK);
+        wServletOutput.setToolTipText(BaseMessages.getString(PKG, "JsonOutputDialog.ServletOutput.Tooltip"));
+        props.setLook(wServletOutput);
+        fdServletOutput = new FormData();
+        fdServletOutput.left = new FormAttachment(middle, 0);
+        fdServletOutput.top = new FormAttachment(wEncoding, margin);
+        fdServletOutput.right = new FormAttachment(100, 0);
+        wServletOutput.setLayoutData(fdServletOutput);
+        wServletOutput.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e) {
+                input.setChanged();
+                setFlagsServletOption();
+            }
+        });
+
+        // Create multi-part file?
+        wlAddDate = new Label(wFileName, SWT.RIGHT);
+        wlAddDate.setText(BaseMessages.getString(PKG, "JsonOutputDialog.AddDate.Label"));
+        props.setLook(wlAddDate);
+        fdlAddDate = new FormData();
+        fdlAddDate.left = new FormAttachment(0, 0);
+        fdlAddDate.top = new FormAttachment(wServletOutput, margin);
+        fdlAddDate.right = new FormAttachment(middle, -margin);
+        wlAddDate.setLayoutData(fdlAddDate);
+        wAddDate = new Button(wFileName, SWT.CHECK);
+        props.setLook(wAddDate);
+        fdAddDate = new FormData();
+        fdAddDate.left = new FormAttachment(middle, 0);
+        fdAddDate.top = new FormAttachment(wServletOutput, margin);
+        fdAddDate.right = new FormAttachment(100, 0);
+        wAddDate.setLayoutData(fdAddDate);
+        wAddDate.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e) {
+                input.setChanged();
+            }
+        });
+        // Create multi-part file?
+        wlAddTime = new Label(wFileName, SWT.RIGHT);
+        wlAddTime.setText(BaseMessages.getString(PKG, "JsonOutputDialog.AddTime.Label"));
+        props.setLook(wlAddTime);
+        fdlAddTime = new FormData();
+        fdlAddTime.left = new FormAttachment(0, 0);
+        fdlAddTime.top = new FormAttachment(wAddDate, margin);
+        fdlAddTime.right = new FormAttachment(middle, -margin);
+        wlAddTime.setLayoutData(fdlAddTime);
+        wAddTime = new Button(wFileName, SWT.CHECK);
+        props.setLook(wAddTime);
+        fdAddTime = new FormData();
+        fdAddTime.left = new FormAttachment(middle, 0);
+        fdAddTime.top = new FormAttachment(wAddDate, margin);
+        fdAddTime.right = new FormAttachment(100, 0);
+        wAddTime.setLayoutData(fdAddTime);
+        wAddTime.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e) {
+                input.setChanged();
+            }
+        });
+
+        wbShowFiles = new Button(wFileName, SWT.PUSH | SWT.CENTER);
+        props.setLook(wbShowFiles);
+        wbShowFiles.setText(BaseMessages.getString(PKG, "JsonOutputDialog.ShowFiles.Button"));
+        fdbShowFiles = new FormData();
+        fdbShowFiles.left = new FormAttachment(middle, 0);
+        fdbShowFiles.top = new FormAttachment(wAddTime, margin * 2);
+        wbShowFiles.setLayoutData(fdbShowFiles);
+        wbShowFiles.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e) {
+                JsonOutputMeta tfoi = new JsonOutputMeta();
+                getInfo(tfoi);
+                String[] files = tfoi.getFiles(transMeta.environmentSubstitute(wFilename.getText()));
+                if (files != null && files.length > 0) {
+                    EnterSelectionDialog esd =
+                            new EnterSelectionDialog(shell, files, BaseMessages.getString(PKG,
+                                    "JsonOutputDialog.SelectOutputFiles.DialogTitle"), BaseMessages.getString(PKG,
+                                    "JsonOutputDialog.SelectOutputFiles.DialogMessage"));
+                    esd.setViewOnly();
+                    esd.open();
+                } else {
+                    MessageBox mb = new MessageBox(shell, SWT.OK | SWT.ICON_ERROR);
+                    mb.setMessage(BaseMessages.getString(PKG, "JsonOutputDialog.NoFilesFound.DialogMessage"));
+                    mb.setText(BaseMessages.getString(PKG, "System.DialogTitle.Error"));
+                    mb.open();
+                }
+            }
+        });
+
+        // Add File to the result files name
+        wlAddToResult = new Label(wFileName, SWT.RIGHT);
+        wlAddToResult.setText(BaseMessages.getString(PKG, "JsonOutputDialog.AddFileToResult.Label"));
+        props.setLook(wlAddToResult);
+        fdlAddToResult = new FormData();
+        fdlAddToResult.left = new FormAttachment(0, 0);
+        fdlAddToResult.top = new FormAttachment(wbShowFiles, margin);
+        fdlAddToResult.right = new FormAttachment(middle, -margin);
+        wlAddToResult.setLayoutData(fdlAddToResult);
+        wAddToResult = new Button(wFileName, SWT.CHECK);
+        wAddToResult.setToolTipText(BaseMessages.getString(PKG, "JsonOutputDialog.AddFileToResult.Tooltip"));
+        props.setLook(wAddToResult);
+        fdAddToResult = new FormData();
+        fdAddToResult.left = new FormAttachment(middle, 0);
+        fdAddToResult.top = new FormAttachment(wbShowFiles, margin);
+        fdAddToResult.right = new FormAttachment(100, 0);
+        wAddToResult.setLayoutData(fdAddToResult);
+        SelectionAdapter lsSelR = new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent arg0) {
+                input.setChanged();
+            }
+        };
+        wAddToResult.addSelectionListener(lsSelR);
+
+        fdFileName = new FormData();
+        fdFileName.left = new FormAttachment(0, margin);
+        fdFileName.top = new FormAttachment(wSettings, 2 * margin);
+        fdFileName.right = new FormAttachment(100, -margin);
+        wFileName.setLayoutData(fdFileName);
+
+        // ///////////////////////////////////////////////////////////
+        // / END OF FileName GROUP
+        // ///////////////////////////////////////////////////////////
+    }
+
+    private void createExtensionLine(ModifyListener lsMod, int middle, int margin) {
+        // Extension line
+        wlExtension = new Label(wFileName, SWT.RIGHT);
+        wlExtension.setText(BaseMessages.getString(PKG, "System.Label.Extension"));
+        props.setLook(wlExtension);
+        fdlExtension = new FormData();
+        fdlExtension.left = new FormAttachment(0, 0);
+        fdlExtension.top = new FormAttachment(wDoNotOpenNewFileInit, margin);
+        fdlExtension.right = new FormAttachment(middle, -margin);
+        wlExtension.setLayoutData(fdlExtension);
+
+        wExtension = new TextVar(transMeta, wFileName, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+        props.setLook(wExtension);
+        wExtension.addModifyListener(lsMod);
+        fdExtension = new FormData();
+        fdExtension.left = new FormAttachment(middle, 0);
+        fdExtension.top = new FormAttachment(wDoNotOpenNewFileInit, margin);
+        fdExtension.right = new FormAttachment(100, -margin);
+        wExtension.setLayoutData(fdExtension);
+
+        wlEncoding = new Label(wFileName, SWT.RIGHT);
+        wlEncoding.setText(BaseMessages.getString(PKG, "JsonOutputDialog.Encoding.Label"));
+        props.setLook(wlEncoding);
+        fdlEncoding = new FormData();
+        fdlEncoding.left = new FormAttachment(0, 0);
+        fdlEncoding.top = new FormAttachment(wExtension, margin);
+        fdlEncoding.right = new FormAttachment(middle, -margin);
+        wlEncoding.setLayoutData(fdlEncoding);
+        wEncoding = new ComboVar(transMeta, wFileName, SWT.BORDER | SWT.READ_ONLY);
+        wEncoding.setEditable(true);
+        props.setLook(wEncoding);
+        wEncoding.addModifyListener(lsMod);
+        fdEncoding = new FormData();
+        fdEncoding.left = new FormAttachment(middle, 0);
+        fdEncoding.top = new FormAttachment(wExtension, margin);
+        fdEncoding.right = new FormAttachment(100, 0);
+        wEncoding.setLayoutData(fdEncoding);
+        wEncoding.addFocusListener(new FocusListener() {
+            public void focusLost(org.eclipse.swt.events.FocusEvent e) {
+            }
+
+            public void focusGained(org.eclipse.swt.events.FocusEvent e) {
+                Cursor busy = new Cursor(shell.getDisplay(), SWT.CURSOR_WAIT);
+                shell.setCursor(busy);
+                setEncodings();
+                shell.setCursor(null);
+                busy.dispose();
+            }
+        });
     }
 
     protected void setFlagsServletOption() {

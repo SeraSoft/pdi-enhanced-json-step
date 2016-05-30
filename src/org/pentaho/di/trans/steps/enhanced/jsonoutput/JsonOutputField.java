@@ -22,6 +22,8 @@
 
 package org.pentaho.di.trans.steps.enhanced.jsonoutput;
 
+import org.pentaho.di.core.injection.Injection;
+
 /**
  * Describes a single field in an Json output file
  *
@@ -30,9 +32,13 @@ package org.pentaho.di.trans.steps.enhanced.jsonoutput;
  */
 public class JsonOutputField implements Cloneable {
 
+    @Injection( name = "JSON_FIELDNAME", group = "FIELDS" )
     private String fieldName;
+    @Injection( name = "JSON_ELEMENTNAME", group = "FIELDS" )
     private String elementName;
+    @Injection( name = "JSON_ISJSONFRAGMENT", group = "FIELDS" )
     private boolean isJSONFragment;
+    @Injection( name = "JSON_REMOVEIFBLANK", group = "FIELDS" )
     private boolean removeIfBlank;
 
     public boolean isJSONFragment() {
