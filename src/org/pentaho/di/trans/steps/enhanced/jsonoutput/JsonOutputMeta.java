@@ -22,10 +22,6 @@
 
 package org.pentaho.di.trans.steps.enhanced.jsonoutput;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-
 import org.pentaho.di.core.CheckResult;
 import org.pentaho.di.core.CheckResultInterface;
 import org.pentaho.di.core.Const;
@@ -47,14 +43,13 @@ import org.pentaho.di.repository.ObjectId;
 import org.pentaho.di.repository.Repository;
 import org.pentaho.di.trans.Trans;
 import org.pentaho.di.trans.TransMeta;
-import org.pentaho.di.trans.step.BaseStepMeta;
-import org.pentaho.di.trans.step.StepDataInterface;
-import org.pentaho.di.trans.step.StepInterface;
-import org.pentaho.di.trans.step.StepMeta;
-import org.pentaho.di.trans.step.StepMetaInterface;
-import org.pentaho.di.trans.step.StepMetaInjectionInterface;
+import org.pentaho.di.trans.step.*;
 import org.pentaho.metastore.api.IMetaStore;
 import org.w3c.dom.Node;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 
 /**
  * This class knows how to handle the MetaData for the Json output step
@@ -67,14 +62,14 @@ import org.w3c.dom.Node;
         name = "EnhancedJsonOutput.name",
         description = "EnhancedJsonOutput.description",
         categoryDescription = "EnhancedJsonOutput.category")
-@InjectionSupported( localizationPrefix = "JsonOutput.Injection.", groups = {  "GENERAL", "KEY_FIELDS", "FIELDS" } )
+@InjectionSupported(localizationPrefix = "JsonOutput.Injection.", groups = {"GENERAL", "KEY_FIELDS", "FIELDS"})
 public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
     private static Class<?> PKG = JsonOutputMeta.class; // for i18n purposes, needed by Translator2!!
 
     /**
      * Operations type
      */
-    @Injection( name = "OPERATION", group = "GENERAL" )
+    @Injection(name = "OPERATION", group = "GENERAL")
     private int operationType;
 
     /**
@@ -99,26 +94,20 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
     /**
      * The encoding to use for reading: null or empty string means system default encoding
      */
-    @Injection( name = "ENCODING", group = "GENERAL" )
+    @Injection(name = "ENCODING", group = "GENERAL")
     private String encoding;
 
     /**
      * The name value containing the resulting Json fragment
      */
-    @Injection( name = "OUTPUT_VALUE", group = "GENERAL" )
+    @Injection(name = "OUTPUT_VALUE", group = "GENERAL")
     private String outputValue;
 
     /**
      * The name of the json bloc
      */
-    @Injection( name = "JSON_BLOC_NAME", group = "GENERAL" )
+    @Injection(name = "JSON_BLOC_NAME", group = "GENERAL")
     private String jsonBloc;
-
-    @Injection( name = "NR_ROWS_IN_BLOC", group = "GENERAL" )
-    private String nrRowsInBloc;
-
-    @Injection( name = "BLOC_KEY_NAME", group = "GENERAL" )
-    private String blockKeyName;
 
 
   /* THE FIELD SPECIFICATIONS ... */
@@ -135,37 +124,37 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
     @InjectionDeep
     private JsonOutputKeyField[] keyFields;
 
-    @Injection( name = "ADD_TO_RESULT", group = "GENERAL" )
+    @Injection(name = "ADD_TO_RESULT", group = "GENERAL")
     private boolean AddToResult;
 
     /**
      * Whether to push the output into the output of a servlet with the executeTrans Carte/DI-Server servlet
      */
-    @Injection( name = "PASS_TO_SERVLET", group = "GENERAL" )
+    @Injection(name = "PASS_TO_SERVLET", group = "GENERAL")
     private boolean servletOutput;
 
     /**
      * The base name of the output file
      */
-    @Injection( name = "FILE_NAME", group = "GENERAL" )
+    @Injection(name = "FILE_NAME", group = "GENERAL")
     private String fileName;
 
     /**
      * The file extention in case of a generated filename
      */
-    @Injection( name = "EXTENSION", group = "GENERAL" )
+    @Injection(name = "EXTENSION", group = "GENERAL")
     private String extension;
 
     /**
      * Flag to indicate the we want to append to the end of an existing file (if it exists)
      */
-    @Injection( name = "APPEND", group = "GENERAL" )
+    @Injection(name = "APPEND", group = "GENERAL")
     private boolean fileAppended;
 
     /**
      * Flag to indicate to force unmarshall to JSON Arrays even with a single occurrence in a list
      */
-    @Injection( name = "FORCE_JSON_ARRAYS", group = "GENERAL" )
+    @Injection(name = "FORCE_JSON_ARRAYS", group = "GENERAL")
     private boolean useArrayWithSingleInstance;
 
     /**
@@ -191,7 +180,7 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
     /**
      * Flag: create parent folder if needed
      */
-    @Injection( name = "CREATE_PARENT_FOLDER", group = "GENERAL" )
+    @Injection(name = "CREATE_PARENT_FOLDER", group = "GENERAL")
     private boolean createparentfolder;
 
     private boolean doNotOpenNewFileInit;
@@ -408,8 +397,6 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
         try {
             outputValue = XMLHandler.getTagValue(stepnode, "outputValue");
             jsonBloc = XMLHandler.getTagValue(stepnode, "jsonBloc");
-            blockKeyName = XMLHandler.getTagValue(stepnode, "blockKeyName");
-            nrRowsInBloc = XMLHandler.getTagValue(stepnode, "nrRowsInBloc");
             operationType = getOperationTypeByCode(Const.NVL(XMLHandler.getTagValue(stepnode, "operation_type"), ""));
             useArrayWithSingleInstance = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "use_arrays_with_single_instance"));
 
@@ -461,7 +448,6 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
         encoding = Const.XML_ENCODING;
         outputValue = "outputValue";
         jsonBloc = "result";
-        nrRowsInBloc = "1";
         operationType = OPERATION_TYPE_WRITE_TO_FILE;
         extension = "js";
 
@@ -501,8 +487,6 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
 
         retval.append("    ").append(XMLHandler.addTagValue("outputValue", outputValue));
         retval.append("    ").append(XMLHandler.addTagValue("jsonBloc", jsonBloc));
-        retval.append("    ").append(XMLHandler.addTagValue("blockKeyName", blockKeyName));
-        retval.append("    ").append(XMLHandler.addTagValue("nrRowsInBloc", nrRowsInBloc));
         retval.append("    ").append(XMLHandler.addTagValue("operation_type", getOperationTypeCode(operationType)));
         retval.append("    ").append(XMLHandler.addTagValue("use_arrays_with_single_instance", useArrayWithSingleInstance));
         retval.append("    ").append(XMLHandler.addTagValue("encoding", encoding));
@@ -554,8 +538,6 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
         try {
             outputValue = rep.getStepAttributeString(id_step, "outputValue");
             jsonBloc = rep.getStepAttributeString(id_step, "jsonBloc");
-            blockKeyName = rep.getStepAttributeString(id_step, "blockKeyName");
-            nrRowsInBloc = rep.getStepAttributeString(id_step, "nrRowsInBloc");
 
             operationType = getOperationTypeByCode(Const.NVL(rep.getStepAttributeString(id_step, "operation_type"), ""));
             useArrayWithSingleInstance = rep.getStepAttributeBoolean(id_step, "use_arrays_with_single_instance");
@@ -612,9 +594,6 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
         try {
             rep.saveStepAttribute(id_transformation, id_step, "outputValue", outputValue);
             rep.saveStepAttribute(id_transformation, id_step, "jsonBloc", jsonBloc);
-            rep.saveStepAttribute(id_transformation, id_step, "blockKeyName", blockKeyName);
-            rep.saveStepAttribute(id_transformation, id_step, "nrRowsInBloc", nrRowsInBloc);
-            rep.saveStepAttribute(id_transformation, id_step, "blockKeyName", blockKeyName);
 
             rep.saveStepAttribute(id_transformation, id_step, "operation_type", getOperationTypeCode(operationType));
             rep.saveStepAttribute(id_transformation, id_step, "use_arrays_with_single_instance", useArrayWithSingleInstance);
@@ -635,7 +614,7 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
             for (int i = 0; i < keyFields.length; i++) {
                 JsonOutputKeyField keyField = keyFields[i];
 
-                rep.saveStepAttribute(id_transformation, id_step, i, "field_name", keyField.getFieldName());
+                rep.saveStepAttribute(id_transformation, id_step, i, "key_field_name", keyField.getFieldName());
             }
 
             for (int i = 0; i < outputFields.length; i++) {
@@ -816,28 +795,6 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
         this.jsonBloc = jsonBloc;
     }
 
-    /**
-     * @return Returns the jsonBloc.
-     */
-    public String getNrRowsInBloc() {
-        return nrRowsInBloc;
-    }
-
-    /**
-     * @param nrRowsInBloc The nrRowsInBloc.
-     */
-    public void setNrRowsInBloc(String nrRowsInBloc) {
-        this.nrRowsInBloc = nrRowsInBloc;
-    }
-
-    public String getBlockKeyName() {
-        return blockKeyName;
-    }
-
-    public void setBlockKeyName(String blockKeyName) {
-        this.blockKeyName = blockKeyName;
-    }
-
     public String getOutputValue() {
         return outputValue;
     }
@@ -860,9 +817,5 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
 
     public void setUseArrayWithSingleInstance(boolean useArrayWithSingleInstance) {
         this.useArrayWithSingleInstance = useArrayWithSingleInstance;
-    }
-
-    public StepMetaInjectionInterface getStepMetaInjectionInterface() {
-        return new JsonOutputMetaInjection(this);
     }
 }

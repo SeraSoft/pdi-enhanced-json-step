@@ -58,6 +58,7 @@ import org.pentaho.di.trans.step.BaseStepMeta;
 import org.pentaho.di.trans.step.StepDialogInterface;
 import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.steps.enhanced.jsonoutput.JsonOutputField;
+import org.pentaho.di.trans.steps.enhanced.jsonoutput.JsonOutputKeyField;
 import org.pentaho.di.trans.steps.enhanced.jsonoutput.JsonOutputMeta;
 import org.pentaho.di.ui.core.dialog.EnterSelectionDialog;
 import org.pentaho.di.ui.core.dialog.ErrorDialog;
@@ -93,14 +94,6 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
     private Label wlBlocName;
     private TextVar wBlocName;
     private FormData fdlBlocName, fdBlocName;
-
-    private Label wlBlocKeyName;
-    private TextVar wBlocKeyName;
-    private FormData fdlBlocKeyName, fdBlocKeyName;
-
-    private Label wlNrRowsInBloc;
-    private TextVar wNrRowsInBloc;
-    private FormData fdlNrRowsInBloc, fdNrRowsInBloc;
 
     private TableView wFields;
     private FormData fdFields;
@@ -243,7 +236,7 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
         fdlOperation = new FormData();
         fdlOperation.left = new FormAttachment(0, 0);
         fdlOperation.right = new FormAttachment(middle, -margin);
-        fdlOperation.top = new FormAttachment(wNrRowsInBloc, margin);
+        fdlOperation.top = new FormAttachment(wlBlocName, margin);
         wlOperation.setLayoutData(fdlOperation);
 
         wOperation = new CCombo(wGeneralComp, SWT.BORDER | SWT.READ_ONLY);
@@ -251,7 +244,7 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
         wOperation.addModifyListener(lsMod);
         fdOperation = new FormData();
         fdOperation.left = new FormAttachment(middle, 0);
-        fdOperation.top = new FormAttachment(wNrRowsInBloc, margin);
+        fdOperation.top = new FormAttachment(wlBlocName, margin);
         fdOperation.right = new FormAttachment(100, -margin);
         wOperation.setLayoutData(fdOperation);
         wOperation.setItems(JsonOutputMeta.operationTypeDesc);
@@ -514,59 +507,22 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
         fdBlocName.right = new FormAttachment(100, 0);
         wBlocName.setLayoutData(fdBlocName);
 
-        // Loop block key name
-        wlBlocKeyName = new Label(wSettings, SWT.RIGHT);
-        wlBlocKeyName.setText(BaseMessages.getString(PKG, "JsonOutputDialog.BlocKeyName.Label"));
-        props.setLook(wlBlocKeyName);
-        fdlBlocKeyName = new FormData();
-        fdlBlocKeyName.left = new FormAttachment(0, 0);
-        fdlBlocKeyName.top = new FormAttachment(wBlocName, margin);
-        fdlBlocKeyName.right = new FormAttachment(middle, -margin);
-        wlBlocKeyName.setLayoutData(fdlBlocKeyName);
-        wBlocKeyName = new TextVar(transMeta, wSettings, SWT.BORDER | SWT.READ_ONLY);
-        wBlocKeyName.setEditable(true);
-        props.setLook(wBlocKeyName);
-        wBlocKeyName.addModifyListener(lsMod);
-        fdBlocKeyName = new FormData();
-        fdBlocKeyName.left = new FormAttachment(middle, 0);
-        fdBlocKeyName.top = new FormAttachment(wBlocName, margin);
-        fdBlocKeyName.right = new FormAttachment(100, 0);
-        wBlocKeyName.setLayoutData(fdBlocKeyName);
-
-        wlNrRowsInBloc = new Label(wSettings, SWT.RIGHT);
-        wlNrRowsInBloc.setText(BaseMessages.getString(PKG, "JsonOutputDialog.NrRowsInBloc.Label"));
-        props.setLook(wlNrRowsInBloc);
-        fdlNrRowsInBloc = new FormData();
-        fdlNrRowsInBloc.left = new FormAttachment(0, 0);
-        fdlNrRowsInBloc.top = new FormAttachment(wBlocKeyName, margin);
-        fdlNrRowsInBloc.right = new FormAttachment(middle, -margin);
-        wlNrRowsInBloc.setLayoutData(fdlNrRowsInBloc);
-        wNrRowsInBloc = new TextVar(transMeta, wSettings, SWT.BORDER | SWT.READ_ONLY);
-        wNrRowsInBloc.setToolTipText(BaseMessages.getString(PKG, "JsonOutputDialog.NrRowsInBloc.ToolTip"));
-        wNrRowsInBloc.setEditable(true);
-        props.setLook(wNrRowsInBloc);
-        wNrRowsInBloc.addModifyListener(lsMod);
-        fdNrRowsInBloc = new FormData();
-        fdNrRowsInBloc.left = new FormAttachment(middle, 0);
-        fdNrRowsInBloc.top = new FormAttachment(wBlocKeyName, margin);
-        fdNrRowsInBloc.right = new FormAttachment(100, 0);
-        wNrRowsInBloc.setLayoutData(fdNrRowsInBloc);
-
         wlOutputValue = new Label(wSettings, SWT.RIGHT);
         wlOutputValue.setText(BaseMessages.getString(PKG, "JsonOutputDialog.OutputValue.Label"));
         props.setLook(wlOutputValue);
         fdlOutputValue = new FormData();
         fdlOutputValue.left = new FormAttachment(0, 0);
-        fdlOutputValue.top = new FormAttachment(wNrRowsInBloc, margin);
+        fdlOutputValue.top = new FormAttachment(wBlocName, margin);
         fdlOutputValue.right = new FormAttachment(middle, -margin);
         wlOutputValue.setLayoutData(fdlOutputValue);
         wOutputValue = new TextVar(transMeta, wSettings, SWT.BORDER | SWT.READ_ONLY);
         wOutputValue.setEditable(true);
+        wOutputValue.setToolTipText("JsonOutputDialog.OutputValue.Tooltip");
         props.setLook(wOutputValue);
         wOutputValue.addModifyListener(lsMod);
         fdOutputValue = new FormData();
         fdOutputValue.left = new FormAttachment(middle, 0);
-        fdOutputValue.top = new FormAttachment(wNrRowsInBloc, margin);
+        fdOutputValue.top = new FormAttachment(wBlocName, margin);
         fdOutputValue.right = new FormAttachment(100, 0);
         wOutputValue.setLayoutData(fdOutputValue);
 
@@ -992,11 +948,9 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
     /**
      * Copy information from the meta-data input to the dialog fields.
      */
-    public void getData() {
+    private void getData() {
 
         wBlocName.setText(Const.NVL(input.getJsonBloc(), ""));
-        wBlocKeyName.setText(Const.NVL(input.getBlockKeyName(), ""));
-        wNrRowsInBloc.setText(Const.NVL(input.getNrRowsInBloc(), ""));
         wEncoding.setText(Const.NVL(input.getEncoding(), ""));
         wOutputValue.setText(Const.NVL(input.getOutputValue(), ""));
         wUseArrayWithSingleInstance.setSelection(input.isUseArrayWithSingleInstance());
@@ -1017,6 +971,14 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
 
         if (isDebug()) {
             logDebug(BaseMessages.getString(PKG, "JsonOutputDialog.Log.GettingFieldsInfo"));
+        }
+
+        for (int i = 0; i < input.getKeyFields().length; i++) {
+            JsonOutputKeyField field = input.getKeyFields()[i];
+
+            TableItem item = wKeyFields.table.getItem(i);
+            item.setText(1, Const.NVL(field.getFieldName(), ""));
+
         }
 
         for (int i = 0; i < input.getOutputFields().length; i++) {
@@ -1054,9 +1016,8 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
     }
 
     private void getInfo(JsonOutputMeta jsometa) {
+
         jsometa.setJsonBloc(wBlocName.getText());
-        jsometa.setNrRowsInBloc(wNrRowsInBloc.getText());
-        jsometa.setBlockKeyName(wBlocKeyName.getText());
         jsometa.setEncoding(wEncoding.getText());
         jsometa.setOutputValue(wOutputValue.getText());
         jsometa.setUseArrayWithSingleInstance(wUseArrayWithSingleInstance.getSelection());
@@ -1074,6 +1035,18 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
         jsometa.setAddToResult(wAddToResult.getSelection());
         jsometa.setDoNotOpenNewFileInit(wDoNotOpenNewFileInit.getSelection());
 
+        int nrKeyFields = wKeyFields.nrNonEmpty();
+
+        jsometa.allocateKey(nrKeyFields);
+
+        for (int i = 0; i < nrKeyFields; i++) {
+            JsonOutputKeyField field = new JsonOutputKeyField();
+
+            TableItem item = wKeyFields.getNonEmpty(i);
+            field.setFieldName(item.getText(1));
+            jsometa.getKeyFields()[i] = field;
+        }
+
         int nrfields = wFields.nrNonEmpty();
 
         jsometa.allocate(nrfields);
@@ -1084,10 +1057,10 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
             TableItem item = wFields.getNonEmpty(i);
             field.setFieldName(item.getText(1));
             field.setElementName(item.getText(2));
-            // CHECKSTYLE:Indentation:OFF
-            jsometa.getOutputFields()[i] = field;
             field.setJSONFragment(BaseMessages.getString(PKG, "System.Combo.Yes").equalsIgnoreCase(item.getText(3)));
             field.setRemoveIfBlank(BaseMessages.getString(PKG, "System.Combo.Yes").equalsIgnoreCase(item.getText(4)));
+            // CHECKSTYLE:Indentation:OFF
+            jsometa.getOutputFields()[i] = field;
         }
     }
 

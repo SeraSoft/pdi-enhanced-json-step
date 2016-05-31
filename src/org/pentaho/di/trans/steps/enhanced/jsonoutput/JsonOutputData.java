@@ -48,6 +48,7 @@ public class JsonOutputData extends BaseStepData implements StepDataInterface {
 
     public int nrFields;
     public int[] fieldIndexes;
+    public int[] keysGroupIndexes;
     public JSONObject jg;
     public JSONArray ja;
     public int nrRow;
@@ -68,10 +69,8 @@ public class JsonOutputData extends BaseStepData implements StepDataInterface {
     public boolean writeToFile;
 
     public String realBlocName;
-    public String blocKeyName;
     public int splitnr;
     public Writer writer;
-    public int nrRowsInBloc;
 
     /**
      *
@@ -83,7 +82,6 @@ public class JsonOutputData extends BaseStepData implements StepDataInterface {
         this.outputValue = false;
         this.writeToFile = false;
         this.writer = null;
-        this.nrRowsInBloc = 0;
     }
 
 }

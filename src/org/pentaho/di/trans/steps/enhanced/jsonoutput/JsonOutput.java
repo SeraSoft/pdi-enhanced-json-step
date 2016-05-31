@@ -41,6 +41,7 @@ import org.pentaho.di.core.Const;
 import org.pentaho.di.core.ResultFile;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.exception.KettleStepException;
+import org.pentaho.di.core.exception.KettleValueException;
 import org.pentaho.di.core.row.RowDataUtil;
 import org.pentaho.di.core.row.RowMeta;
 import org.pentaho.di.core.row.ValueMetaInterface;
@@ -66,11 +67,10 @@ public class JsonOutput extends BaseStep implements StepInterface {
 
     private JsonOutputMeta meta;
     private JsonOutputData data;
+    public  Object[] prevRow;
 
     private ObjectNode itemNode;
     private JsonNodeFactory nc;
-    private int blocKeyNameIndex;
-    private String blocKeyNamePrev;
     private List<ObjectNode> jsonItems;
     private ObjectMapper mapper;
 
@@ -81,8 +81,7 @@ public class JsonOutput extends BaseStep implements StepInterface {
 
     public void manageRowItems(Object[] row) throws KettleException {
 
-        String currentBlocKeyNameValue = data.inputRowMeta.getString(row, blocKeyNameIndex);
-        if (!blocKeyNamePrev.equals(currentBlocKeyNameValue)) {
+        if (!sameGroup( prevRow, row )) {
             // Otput the new row
             outPutRow(row);
             jsonItems = new ArrayList<>();
@@ -160,8 +159,9 @@ public class JsonOutput extends BaseStep implements StepInterface {
         }
         jsonItems.add(itemNode);
 
+        prevRow = data.inputRowMeta.cloneRow( row ); // copy the row to previous
         data.nrRow++;
-        blocKeyNamePrev = currentBlocKeyNameValue;
+        //        blocKeyNamePrev = currentBlocKeyNameValue;
 
      /*       if (data.nrRowsInBloc > 0) {
                 // System.out.println("data.nrRow%data.nrRowsInBloc = "+ data.nrRow%data.nrRowsInBloc);
@@ -171,6 +171,11 @@ public class JsonOutput extends BaseStep implements StepInterface {
                     outPutRow(row);
                 }
             }*/
+    }
+
+    // Is the row r of the same group as previous?
+    private boolean sameGroup( Object[] previous, Object[] r ) throws KettleValueException {
+        return data.inputRowMeta.compare( previous, r, data.keysGroupIndexes ) == 0;
     }
 
     public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
@@ -187,38 +192,8 @@ public class JsonOutput extends BaseStep implements StepInterface {
 
         if (first) {
 
-            nc = new ObjectMapper().getNodeFactory();
-            mapper = new ObjectMapper();
-            jsonItems = new ArrayList<>();
+            if (onFirstRecord(r)) return false;
 
-            first = false;
-            data.inputRowMeta = getInputRowMeta();
-            data.inputRowMetaSize = data.inputRowMeta.size();
-
-            blocKeyNameIndex = data.inputRowMeta.indexOfValue(meta.getBlockKeyName());
-            blocKeyNamePrev = data.inputRowMeta.getString(r, blocKeyNameIndex);
-
-            ValueMetaInterface keyValueMeta = data.inputRowMeta.getValueMeta(blocKeyNameIndex);
-
-            if (data.outputValue) {
-                // Create new structure for output fields
-                data.outputRowMeta = new RowMeta();
-                data.outputRowMeta.addValueMeta(0, new ValueMetaString(meta.getBlockKeyName()));
-                data.outputRowMeta.addValueMeta(1, new ValueMetaString(meta.getOutputValue()));
-            }
-
-            // Cache the field name indexes
-            //
-            data.nrFields = meta.getOutputFields().length;
-            data.fieldIndexes = new int[data.nrFields];
-            for (int i = 0; i < data.nrFields; i++) {
-                data.fieldIndexes[i] = data.inputRowMeta.indexOfValue(meta.getOutputFields()[i].getFieldName());
-                if (data.fieldIndexes[i] < 0) {
-                    throw new KettleException(BaseMessages.getString(PKG, "JsonOutput.Exception.FieldNotFound"));
-                }
-                JsonOutputField field = meta.getOutputFields()[i];
-                field.setElementName(environmentSubstitute(field.getElementName()));
-            }
         }
 
         manageRowItems(r);
@@ -228,6 +203,67 @@ public class JsonOutput extends BaseStep implements StepInterface {
             incrementLinesOutput();
         }
         return true;
+    }
+
+    private boolean onFirstRecord(Object[] r) throws KettleException {
+
+        nc = new ObjectMapper().getNodeFactory();
+        mapper = new ObjectMapper();
+        jsonItems = new ArrayList<>();
+
+        first = false;
+        data.inputRowMeta = getInputRowMeta();
+        data.inputRowMetaSize = data.inputRowMeta.size();
+
+        // Init previous row copy to this first row
+        prevRow = data.inputRowMeta.cloneRow( r ); // copy the row to previous
+
+        if (data.outputValue) {
+            // Create new structure for output fields
+            data.outputRowMeta = new RowMeta();
+
+            for (int i=0; i<meta.getKeyFields().length; i++) {
+                data.outputRowMeta.addValueMeta(1, new ValueMetaString(meta.getKeyFields()[i].getFieldName()));
+            }
+
+            data.outputRowMeta.addValueMeta(1, new ValueMetaString(meta.getOutputValue()));
+        }
+
+        initDataFieldsPositionsArray();
+
+
+        if (initKeyFieldsIndexesArray(r)) return true;
+        return false;
+    }
+
+    private void initDataFieldsPositionsArray() throws KettleException {
+        // Cache the field name indexes
+        //
+        data.nrFields = meta.getOutputFields().length;
+        data.fieldIndexes = new int[data.nrFields];
+        for (int i = 0; i < data.nrFields; i++) {
+            data.fieldIndexes[i] = data.inputRowMeta.indexOfValue(meta.getOutputFields()[i].getFieldName());
+            if (data.fieldIndexes[i] < 0) {
+                throw new KettleException(BaseMessages.getString(PKG, "JsonOutput.Exception.FieldNotFound"));
+            }
+            JsonOutputField field = meta.getOutputFields()[i];
+            field.setElementName(environmentSubstitute(field.getElementName()));
+        }
+    }
+
+    private boolean initKeyFieldsIndexesArray(Object[] r) {
+        data.keysGroupIndexes = new int[ meta.getKeyFields().length ];
+
+        for ( int i = 0; i < meta.getKeyFields().length; i++ ) {
+            data.keysGroupIndexes[ i ] = data.inputRowMeta.indexOfValue( meta.getKeyFields()[ i ].getFieldName() );
+            if ( ( r != null ) && ( data.keysGroupIndexes[ i ] < 0 ) ) {
+                /* logError( BaseMessages.getString( PKG, "GroupBy.Log.GroupFieldCouldNotFound", meta.getGroupField()[ i ] ) );*/
+                setErrors( 1 );
+                stopAll();
+                return true;
+            }
+        }
+        return false;
     }
 
     @SuppressWarnings("unchecked")
@@ -255,9 +291,14 @@ public class JsonOutput extends BaseStep implements StepInterface {
             e.printStackTrace();
         }
 
-        String[] keyRow = new String[1];
-        keyRow[0] = blocKeyNamePrev;
         if (data.outputValue && data.outputRowMeta != null) {
+
+            String[] keyRow = new String[meta.getKeyFields().length];
+
+            for (int i=0; i<meta.getKeyFields().length; i++) {
+                keyRow[i] = meta.getKeyFields()[i].getFieldName();
+            }
+
             Object[] outputRowData = RowDataUtil.addValueData(keyRow, 1, value);
             incrementLinesOutput();
             putRow(data.outputRowMeta, outputRowData);
@@ -317,8 +358,6 @@ public class JsonOutput extends BaseStep implements StepInterface {
 
             }
             data.realBlocName = Const.NVL(environmentSubstitute(meta.getJsonBloc()), "");
-            data.blocKeyName = Const.NVL(environmentSubstitute(meta.getBlockKeyName()), "");
-            data.nrRowsInBloc = Const.toInt(environmentSubstitute(meta.getNrRowsInBloc()), 0);
             return true;
         }
 
