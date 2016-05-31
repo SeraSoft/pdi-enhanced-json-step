@@ -52,18 +52,6 @@ public class JsonOutputData extends BaseStepData implements StepDataInterface {
     public JSONObject jg;
     public JSONArray ja;
     public int nrRow;
-    public NumberFormat nf;
-    public DecimalFormat df;
-    public DecimalFormatSymbols dfs;
-
-    public SimpleDateFormat daf;
-    public DateFormatSymbols dafs;
-
-    public DecimalFormat defaultDecimalFormat;
-    public DecimalFormatSymbols defaultDecimalFormatSymbols;
-
-    public SimpleDateFormat defaultDateFormat;
-    public DateFormatSymbols defaultDateFormatSymbols;
 
     public boolean outputValue;
     public boolean writeToFile;

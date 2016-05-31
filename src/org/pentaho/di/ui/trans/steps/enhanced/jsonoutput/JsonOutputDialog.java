@@ -141,6 +141,10 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
     private Button wAddDate;
     private FormData fdlAddDate, fdAddDate;
 
+    private Label wlJSONPrittified;
+    private Button wJSONPrittified;
+    private FormData fdlJSONPrittified, fdJSONPrittified;
+
     private Label wlAddTime;
     private Button wAddTime;
     private FormData fdlAddTime, fdAddTime;
@@ -156,6 +160,11 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
     private CCombo wOperation;
     private FormData fdlOperation;
     private FormData fdOperation;
+
+    private Label wlGeneration;
+    private CCombo wGeneration;
+    private FormData fdlGeneration;
+    private FormData fdGeneration;
 
     private Group wSettings;
     private FormData fdSettings;
@@ -489,12 +498,38 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
         groupFileLayout.marginHeight = 10;
         wSettings.setLayout(groupFileLayout);
 
+        // Generation
+        wlGeneration = new Label(wSettings, SWT.RIGHT);
+        wlGeneration.setText(BaseMessages.getString(PKG, "JsonOutputDialog.Generation.Label"));
+        props.setLook(wlGeneration);
+        fdlGeneration = new FormData();
+        fdlGeneration.left = new FormAttachment(0, 0);
+        fdlGeneration.right = new FormAttachment(middle, -margin);
+        fdlGeneration.top = new FormAttachment(wlOperation, margin);
+        wlGeneration.setLayoutData(fdlGeneration);
+
+        wGeneration = new CCombo(wSettings, SWT.BORDER | SWT.READ_ONLY);
+        props.setLook(wGeneration);
+        wGeneration.addModifyListener(lsMod);
+        fdGeneration = new FormData();
+        fdGeneration.left = new FormAttachment(middle, 0);
+        fdGeneration.top = new FormAttachment(wlOperation, margin);
+        fdGeneration.right = new FormAttachment(100, -margin);
+        wGeneration.setLayoutData(fdGeneration);
+        wGeneration.setItems(JsonOutputMeta.generationTypeDesc);
+        wGeneration.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e) {
+                updateGeneration();
+
+            }
+        });
+
         wlBlocName = new Label(wSettings, SWT.RIGHT);
         wlBlocName.setText(BaseMessages.getString(PKG, "JsonOutputDialog.BlocName.Label"));
         props.setLook(wlBlocName);
         fdlBlocName = new FormData();
         fdlBlocName.left = new FormAttachment(0, 0);
-        fdlBlocName.top = new FormAttachment(wOperation, margin);
+        fdlBlocName.top = new FormAttachment(wGeneration, margin);
         fdlBlocName.right = new FormAttachment(middle, -margin);
         wlBlocName.setLayoutData(fdlBlocName);
         wBlocName = new TextVar(transMeta, wSettings, SWT.BORDER | SWT.READ_ONLY);
@@ -503,7 +538,7 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
         wBlocName.addModifyListener(lsMod);
         fdBlocName = new FormData();
         fdBlocName.left = new FormAttachment(middle, 0);
-        fdBlocName.top = new FormAttachment(wOperation, margin);
+        fdBlocName.top = new FormAttachment(wGeneration, margin);
         fdBlocName.right = new FormAttachment(100, 0);
         wBlocName.setLayoutData(fdBlocName);
 
@@ -526,7 +561,6 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
         fdOutputValue.right = new FormAttachment(100, 0);
         wOutputValue.setLayoutData(fdOutputValue);
 
-        // ////////////////////////// start of compatibility mode
         wlUseArrayWithSingleInstance = new Label(wSettings, SWT.RIGHT);
         wlUseArrayWithSingleInstance.setText(BaseMessages.getString(PKG, "JsonOutputDialog.UseArrayWihSingleInstanceMode.Label"));
         props.setLook(wlUseArrayWithSingleInstance);
@@ -536,7 +570,7 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
         fdlUseArrayWithSingleInstance.right = new FormAttachment(middle, -margin);
         wlUseArrayWithSingleInstance.setLayoutData(fdlUseArrayWithSingleInstance);
         wUseArrayWithSingleInstance = new Button(wSettings, SWT.CHECK);
-        wUseArrayWithSingleInstance.setToolTipText(BaseMessages.getString(PKG, "JsonOutputDialog.CompatibilityMode.Tooltip"));
+        wUseArrayWithSingleInstance.setToolTipText(BaseMessages.getString(PKG, "JsonOutputDialog.UseArrayWihSingleInstanceMode.Tooltip"));
         props.setLook(wUseArrayWithSingleInstance);
         fdUseArrayWithSingleInstance = new FormData();
         fdUseArrayWithSingleInstance.left = new FormAttachment(middle, 0);
@@ -544,6 +578,28 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
         fdUseArrayWithSingleInstance.right = new FormAttachment(100, 0);
         wUseArrayWithSingleInstance.setLayoutData(fdUseArrayWithSingleInstance);
         wUseArrayWithSingleInstance.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e) {
+                input.setChanged();
+            }
+        });
+
+        wlJSONPrittified = new Label(wSettings, SWT.RIGHT);
+        wlJSONPrittified.setText(BaseMessages.getString(PKG, "JsonOutputDialog.JSONPrittified.Label"));
+        props.setLook(wlJSONPrittified);
+        fdlJSONPrittified = new FormData();
+        fdlJSONPrittified.left = new FormAttachment(0, 0);
+        fdlJSONPrittified.top = new FormAttachment(wUseArrayWithSingleInstance, margin);
+        fdlJSONPrittified.right = new FormAttachment(middle, -margin);
+        wlJSONPrittified.setLayoutData(fdlJSONPrittified);
+        wJSONPrittified = new Button(wSettings, SWT.CHECK);
+        wJSONPrittified.setToolTipText(BaseMessages.getString(PKG, "JsonOutputDialog.JSONPrittified.Tooltip"));
+        props.setLook(wJSONPrittified);
+        fdJSONPrittified = new FormData();
+        fdJSONPrittified.left = new FormAttachment(middle, 0);
+        fdJSONPrittified.top = new FormAttachment(wUseArrayWithSingleInstance, margin);
+        fdJSONPrittified.right = new FormAttachment(100, 0);
+        wJSONPrittified.setLayoutData(fdJSONPrittified);
+        wJSONPrittified.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent e) {
                 input.setChanged();
             }
@@ -954,7 +1010,9 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
         wEncoding.setText(Const.NVL(input.getEncoding(), ""));
         wOutputValue.setText(Const.NVL(input.getOutputValue(), ""));
         wUseArrayWithSingleInstance.setSelection(input.isUseArrayWithSingleInstance());
+        wJSONPrittified.setSelection(input.isJsonPrittified());
         wOperation.setText(JsonOutputMeta.getOperationTypeDesc(input.getOperationType()));
+        wGeneration.setText(JsonOutputMeta.getGenerationTypeDesc(input.getGenerationType()));
         wFilename.setText(Const.NVL(input.getFileName(), ""));
         wCreateParentFolder.setSelection(input.isCreateParentFolder());
         wExtension.setText(Const.NVL(input.getExtension(), "js"));
@@ -1022,6 +1080,8 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
         jsometa.setOutputValue(wOutputValue.getText());
         jsometa.setUseArrayWithSingleInstance(wUseArrayWithSingleInstance.getSelection());
         jsometa.setOperationType(JsonOutputMeta.getOperationTypeByDesc(wOperation.getText()));
+        jsometa.setJsonPrittified(wJSONPrittified.getSelection());
+        jsometa.setGenerationType(JsonOutputMeta.getGenerationTypeByDesc(wGeneration.getText()));
         jsometa.setCreateParentFolder(wCreateParentFolder.getSelection());
         jsometa.setFileName(wFilename.getText());
         jsometa.setExtension(wExtension.getText());
@@ -1196,7 +1256,14 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
         tableView.optWidth( true );
     }
 
+    private void updateGeneration() {
+        int generationType = JsonOutputMeta.getGenerationTypeByDesc(wGeneration.getText());
+        //boolean activeFile = opType != JsonOutputMeta.OPERATION_TYPE_OUTPUT_VALUE;
+
+    }
+
     private void updateOperation() {
+
         int opType = JsonOutputMeta.getOperationTypeByDesc(wOperation.getText());
         boolean activeFile = opType != JsonOutputMeta.OPERATION_TYPE_OUTPUT_VALUE;
 

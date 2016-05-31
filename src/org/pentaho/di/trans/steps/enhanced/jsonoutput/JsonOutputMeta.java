@@ -91,6 +91,27 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
 
     public static final int OPERATION_TYPE_BOTH = 2;
 
+    public static final int GENERATON_TYPE_FLAT = 0;
+    public static final int GENERATON_TYPE_LOOP_OVER_KEY = 1;
+
+    /**
+     * The generation type description
+     */
+    public static final String[] generationTypeDesc = {
+            BaseMessages.getString(PKG, "JsonOutputMeta.generationType.Flat"),
+            BaseMessages.getString(PKG, "JsonOutputMeta.generationType.LoopOverKey")};
+
+    /**
+     * Generations type
+     */
+    @Injection(name = "GENERATION", group = "GENERAL")
+    private int generationType;
+
+    /**
+     * The generations type codes
+     */
+    public static final String[] generationTypeCode = {"flat", "loopOverKey"};
+
     /**
      * The encoding to use for reading: null or empty string means system default encoding
      */
@@ -109,6 +130,12 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
     @Injection(name = "JSON_BLOC_NAME", group = "GENERAL")
     private String jsonBloc;
 
+    /**
+     * Choose if you want the output prittyfied
+     */
+    @Injection(name = "PRITTIFY", group = "GENERAL")
+    private boolean jsonPrittified;
+
 
   /* THE FIELD SPECIFICATIONS ... */
 
@@ -125,7 +152,7 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
     private JsonOutputKeyField[] keyFields;
 
     @Injection(name = "ADD_TO_RESULT", group = "GENERAL")
-    private boolean AddToResult;
+    private boolean addToResult;
 
     /**
      * Whether to push the output into the output of a servlet with the executeTrans Carte/DI-Server servlet
@@ -282,10 +309,10 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
     }
 
     /**
-     * @return Returns the Add to result filesname flag.
+     * @return Returns the Add to result filename flag.
      */
     public boolean AddToResult() {
-        return AddToResult;
+        return addToResult;
     }
 
     public int getOperationType() {
@@ -306,17 +333,6 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
         return getOperationTypeByCode(tt);
     }
 
-    public void setOperationType(int operationType) {
-        this.operationType = operationType;
-    }
-
-    public static String getOperationTypeDesc(int i) {
-        if (i < 0 || i >= operationTypeDesc.length) {
-            return operationTypeDesc[0];
-        }
-        return operationTypeDesc[i];
-    }
-
     private static int getOperationTypeByCode(String tt) {
         if (tt == null) {
             return 0;
@@ -328,6 +344,60 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
             }
         }
         return 0;
+    }
+
+    public static String getOperationTypeDesc(int i) {
+        if (i < 0 || i >= operationTypeDesc.length) {
+            return operationTypeDesc[0];
+        }
+        return operationTypeDesc[i];
+    }
+
+    public void setOperationType(int operationType) {
+        this.operationType = operationType;
+    }
+
+    public static String getGenerationTypeDesc(int i) {
+        if (i < 0 || i >= generationTypeDesc.length) {
+            return generationTypeDesc[0];
+        }
+        return generationTypeDesc[i];
+    }
+
+
+    private static int getGenerationTypeByCode(String tt) {
+        if (tt == null) {
+            return 0;
+        }
+
+        for (int i = 0; i < generationTypeCode.length; i++) {
+            if (generationTypeCode[i].equalsIgnoreCase(tt)) {
+                return i;
+            }
+        }
+        return 0;
+    }
+
+    public int getGenerationType() {
+        return generationType;
+    }
+
+    public static int getGenerationTypeByDesc(String tt) {
+        if (tt == null) {
+            return 0;
+        }
+
+        for (int i = 0; i < generationTypeDesc.length; i++) {
+            if (generationTypeDesc[i].equalsIgnoreCase(tt)) {
+                return i;
+            }
+        }
+        // If this fails, try to match using the code.
+        return getGenerationTypeByCode(tt);
+    }
+
+    public void setGenerationType(int generationType) {
+        this.generationType = generationType;
     }
 
     /**
@@ -390,7 +460,7 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
      * @param AddToResult The Add file to result to set.
      */
     public void setAddToResult(boolean AddToResult) {
-        this.AddToResult = AddToResult;
+        this.addToResult = AddToResult;
     }
 
     private void readData(Node stepnode) throws KettleXMLException {
@@ -398,10 +468,12 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
             outputValue = XMLHandler.getTagValue(stepnode, "outputValue");
             jsonBloc = XMLHandler.getTagValue(stepnode, "jsonBloc");
             operationType = getOperationTypeByCode(Const.NVL(XMLHandler.getTagValue(stepnode, "operation_type"), ""));
+            generationType = getGenerationTypeByCode(Const.NVL(XMLHandler.getTagValue(stepnode, "generation_type"), ""));
             useArrayWithSingleInstance = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "use_arrays_with_single_instance"));
+            jsonPrittified = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "json_prittified"));
 
             encoding = XMLHandler.getTagValue(stepnode, "encoding");
-            AddToResult = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "AddToResult"));
+            addToResult = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "addToResult"));
             fileName = XMLHandler.getTagValue(stepnode, "file", "name");
             createparentfolder = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "file", "create_parent_folder"));
             extension = XMLHandler.getTagValue(stepnode, "file", "extention");
@@ -445,10 +517,12 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
     }
 
     public void setDefault() {
+
         encoding = Const.XML_ENCODING;
         outputValue = "outputValue";
         jsonBloc = "result";
         operationType = OPERATION_TYPE_WRITE_TO_FILE;
+        generationType = GENERATON_TYPE_FLAT;
         extension = "js";
 
         int nrfields = 0;
@@ -488,9 +562,11 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
         retval.append("    ").append(XMLHandler.addTagValue("outputValue", outputValue));
         retval.append("    ").append(XMLHandler.addTagValue("jsonBloc", jsonBloc));
         retval.append("    ").append(XMLHandler.addTagValue("operation_type", getOperationTypeCode(operationType)));
+        retval.append("    ").append(XMLHandler.addTagValue("generation_type", getGenerationTypeCode(generationType)));
         retval.append("    ").append(XMLHandler.addTagValue("use_arrays_with_single_instance", useArrayWithSingleInstance));
+        retval.append("    ").append(XMLHandler.addTagValue("json_prittified", jsonPrittified));
         retval.append("    ").append(XMLHandler.addTagValue("encoding", encoding));
-        retval.append("    ").append(XMLHandler.addTagValue("addtoresult", AddToResult));
+        retval.append("    ").append(XMLHandler.addTagValue("addtoresult", addToResult));
         retval.append("    <file>" + Const.CR);
         retval.append("      ").append(XMLHandler.addTagValue("name", fileName));
         retval.append("      ").append(XMLHandler.addTagValue("extention", extension));
@@ -540,9 +616,11 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
             jsonBloc = rep.getStepAttributeString(id_step, "jsonBloc");
 
             operationType = getOperationTypeByCode(Const.NVL(rep.getStepAttributeString(id_step, "operation_type"), ""));
+            generationType = getGenerationTypeByCode(Const.NVL(rep.getStepAttributeString(id_step, "generation_type"), ""));
             useArrayWithSingleInstance = rep.getStepAttributeBoolean(id_step, "use_arrays_with_single_instance");
+            jsonPrittified = rep.getStepAttributeBoolean(id_step, "json_prittified");
             encoding = rep.getStepAttributeString(id_step, "encoding");
-            AddToResult = rep.getStepAttributeBoolean(id_step, "addtoresult");
+            addToResult = rep.getStepAttributeBoolean(id_step, "addtoresult");
 
             fileName = rep.getStepAttributeString(id_step, "file_name");
             extension = rep.getStepAttributeString(id_step, "file_extention");
@@ -589,6 +667,13 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
         return operationTypeCode[i];
     }
 
+    private static String getGenerationTypeCode(int i) {
+        if (i < 0 || i >= generationTypeCode.length) {
+            return generationTypeCode[0];
+        }
+        return generationTypeCode[i];
+    }
+
     public void saveRep(Repository rep, IMetaStore metaStore, ObjectId id_transformation, ObjectId id_step)
             throws KettleException {
         try {
@@ -597,8 +682,10 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
 
             rep.saveStepAttribute(id_transformation, id_step, "operation_type", getOperationTypeCode(operationType));
             rep.saveStepAttribute(id_transformation, id_step, "use_arrays_with_single_instance", useArrayWithSingleInstance);
+            rep.saveStepAttribute(id_transformation, id_step, "generation_type", getGenerationTypeCode(operationType));
+            rep.saveStepAttribute(id_transformation, id_step, "json_prittified", jsonPrittified);
             rep.saveStepAttribute(id_transformation, id_step, "encoding", encoding);
-            rep.saveStepAttribute(id_transformation, id_step, "addtoresult", AddToResult);
+            rep.saveStepAttribute(id_transformation, id_step, "addtoresult", addToResult);
 
             rep.saveStepAttribute(id_transformation, id_step, "file_name", fileName);
             rep.saveStepAttribute(id_transformation, id_step, "file_extention", extension);
@@ -817,5 +904,13 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
 
     public void setUseArrayWithSingleInstance(boolean useArrayWithSingleInstance) {
         this.useArrayWithSingleInstance = useArrayWithSingleInstance;
+    }
+
+    public boolean isJsonPrittified() {
+        return jsonPrittified;
+    }
+
+    public void setJsonPrittified(boolean jsonPrittified) {
+        this.jsonPrittified = jsonPrittified;
     }
 }
