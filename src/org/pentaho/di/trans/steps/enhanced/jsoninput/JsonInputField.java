@@ -41,19 +41,13 @@ import org.w3c.dom.Node;
  */
 public class JsonInputField extends BaseFileInputField implements Cloneable {
 
-  @Deprecated
   public static final int TYPE_TRIM_NONE = ValueMetaInterface.TRIM_TYPE_NONE;
-  @Deprecated
   public static final int TYPE_TRIM_LEFT = ValueMetaInterface.TRIM_TYPE_LEFT;
-  @Deprecated
   public static final int TYPE_TRIM_RIGHT = ValueMetaInterface.TRIM_TYPE_RIGHT;
-  @Deprecated
   public static final int TYPE_TRIM_BOTH = ValueMetaInterface.TRIM_TYPE_BOTH;
 
-  @Deprecated
   public static final String[] trimTypeCode = ValueMetaBase.trimTypeCode;
 
-  @Deprecated
   public static final String[] trimTypeDesc = ValueMetaBase.trimTypeDesc;
 
   private String path;
@@ -119,22 +113,15 @@ public class JsonInputField extends BaseFileInputField implements Cloneable {
     return v;
   }
 
-  @Deprecated
   public static final int getTrimTypeByCode( String tt ) {
     return ValueMetaBase.getTrimTypeByCode( tt );
   }
-
-  @Deprecated
   public static final int getTrimTypeByDesc( String tt ) {
     return ValueMetaBase.getTrimTypeByDesc( tt );
   }
-
-  @Deprecated
   public static final String getTrimTypeCode( int i ) {
     return ValueMetaBase.getTrimTypeCode( i );
   }
-
-  @Deprecated
   public static final String getTrimTypeDesc( int i ) {
     return ValueMetaBase.getTrimTypeDesc( i );
   }

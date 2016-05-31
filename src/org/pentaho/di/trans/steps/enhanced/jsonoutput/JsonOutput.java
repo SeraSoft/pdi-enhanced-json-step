@@ -57,9 +57,9 @@ import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
 
 /**
- * Converts input rows to one or more XML files.
+ * Converts input rows to one or more JSON structures.
  *
- * @author Matt
+ * @author Sergio Ramazzina
  * @since 14-jan-2006
  */
 public class JsonOutput extends BaseStep implements StepInterface {
@@ -161,16 +161,6 @@ public class JsonOutput extends BaseStep implements StepInterface {
 
         prevRow = data.inputRowMeta.cloneRow( row ); // copy the row to previous
         data.nrRow++;
-        //        blocKeyNamePrev = currentBlocKeyNameValue;
-
-     /*       if (data.nrRowsInBloc > 0) {
-                // System.out.println("data.nrRow%data.nrRowsInBloc = "+ data.nrRow%data.nrRowsInBloc);
-                if (data.nrRow % data.nrRowsInBloc == 0) {
-                    // We can now output an object
-                    // System.out.println("outputting the row.");
-                    outPutRow(row);
-                }
-            }*/
     }
 
     // Is the row r of the same group as previous?
@@ -223,10 +213,10 @@ public class JsonOutput extends BaseStep implements StepInterface {
             data.outputRowMeta = new RowMeta();
 
             for (int i=0; i<meta.getKeyFields().length; i++) {
-                data.outputRowMeta.addValueMeta(1, new ValueMetaString(meta.getKeyFields()[i].getFieldName()));
+                data.outputRowMeta.addValueMeta(i, new ValueMetaString(meta.getKeyFields()[i].getFieldName()));
             }
 
-            data.outputRowMeta.addValueMeta(1, new ValueMetaString(meta.getOutputValue()));
+            data.outputRowMeta.addValueMeta(meta.getKeyFields().length, new ValueMetaString(meta.getOutputValue()));
         }
 
         initDataFieldsPositionsArray();
