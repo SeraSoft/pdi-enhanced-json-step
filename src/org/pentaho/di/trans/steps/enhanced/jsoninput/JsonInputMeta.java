@@ -386,12 +386,6 @@ public class JsonInputMeta extends BaseFileInputStepMeta implements StepMetaInte
     jsonInputFiles.inputFields = inputFields;
   }
 
-  /**
-   * @deprecated use {@link#getExcludeFileMask()}
-   */
-  public String[] getExludeFileMask() {
-    return getExcludeFileMask();
-  }
 
   public String[] getExcludeFileMask() {
     return inputFiles.excludeFileMask;

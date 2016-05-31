@@ -22,10 +22,10 @@
 
 package org.pentaho.di.trans.steps.enhanced.jsoninput.reader;
 
+import java.io.IOException;
 import java.util.Map;
 
-import net.minidev.json.JSONObject;
-
+import org.codehaus.jackson.map.ObjectMapper;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.exception.KettleValueException;
 import org.pentaho.di.core.logging.LogChannelInterface;
@@ -38,59 +38,64 @@ import org.pentaho.di.trans.steps.enhanced.jsoninput.JsonInputData;
  */
 public class RowOutputConverter {
 
-  private final LogChannelInterface log;
+    private final LogChannelInterface log;
 
-  public RowOutputConverter( LogChannelInterface log ) {
-    this.log = log;
-  }
+    public RowOutputConverter(LogChannelInterface log) {
+        this.log = log;
+    }
 
-  private Object getValue( ValueMetaInterface targetMeta, ValueMetaInterface strConvertMeta, Object value )
-      throws KettleValueException {
-    if ( targetMeta.isNumeric() ) {
-      try {
-        // attempt direct conversion
-        return targetMeta.getNativeDataType( value );
-      } catch ( KettleValueException e ) {
-        if ( log.isDebug() ) {
-          log.logDebug( e.getLocalizedMessage(), e );
+    private Object getValue(ValueMetaInterface targetMeta, ValueMetaInterface strConvertMeta, Object value)
+            throws KettleValueException {
+        if (targetMeta.isNumeric()) {
+            try {
+                // attempt direct conversion
+                return targetMeta.getNativeDataType(value);
+            } catch (KettleValueException e) {
+                if (log.isDebug()) {
+                    log.logDebug(e.getLocalizedMessage(), e);
+                }
+            }
         }
-      }
+        // convert from string
+        String strValue = getStringValue(value);
+        return targetMeta.convertDataFromString(strValue, strConvertMeta, null, null, targetMeta.getTrimType());
     }
-    // convert from string
-    String strValue = getStringValue( value );
-    return targetMeta.convertDataFromString( strValue, strConvertMeta, null, null, targetMeta.getTrimType() );
-  }
 
-  private String getStringValue( Object jo ) {
-    String nodevalue = null;
-    if ( jo != null ) {
-      if ( jo instanceof Map ) {
-        @SuppressWarnings( "unchecked" )
-        Map<String, ?> asStrMap = (Map<String, ?>) jo;
-        nodevalue = JSONObject.toJSONString( asStrMap );
-      } else {
-        nodevalue = jo.toString();
-      }
+    private String getStringValue(Object jo) throws KettleValueException {
+        String nodevalue = null;
+        if (jo != null) {
+            if (jo instanceof Map) {
+                @SuppressWarnings("unchecked")
+                Map<String, ?> asStrMap = (Map<String, ?>) jo;
+                try {
+                    nodevalue = new ObjectMapper().writeValueAsString(asStrMap);
+                } catch (IOException e) {
+                    // TODO : Manage Exception Properly
+                    throw new KettleValueException(e);
+                }
+            } else {
+                nodevalue = jo.toString();
+            }
+        }
+        return nodevalue;
     }
-    return nodevalue;
-  }
 
-  public Object[] getRow( Object[] baseOutputRow, Object[] rawPartRow, JsonInputData data ) throws KettleException {
-    if ( rawPartRow == null ) {
-      return null;
+    public Object[] getRow(Object[] baseOutputRow, Object[] rawPartRow, JsonInputData data) throws KettleException {
+        if (rawPartRow == null) {
+            return null;
+        }
+        for (int i = 0; i < rawPartRow.length; i++) {
+            int outIdx = data.totalpreviousfields + i;
+            Object val =
+                    getValue(data.outputRowMeta.getValueMeta(outIdx), data.convertRowMeta.getValueMeta(outIdx),
+                            rawPartRow[i]);
+            rawPartRow[i] = val;
+            if (val == null && data.repeatedFields.get(i) && data.previousRow != null) {
+                rawPartRow[i] = data.previousRow[outIdx];
+            }
+        }
+        data.previousRow = RowDataUtil.addRowData(baseOutputRow, data.totalpreviousfields, rawPartRow);
+        return data.previousRow;
     }
-    for ( int i = 0; i < rawPartRow.length; i++ ) {
-      int outIdx = data.totalpreviousfields + i;
-      Object val =
-          getValue( data.outputRowMeta.getValueMeta( outIdx ), data.convertRowMeta.getValueMeta( outIdx ),
-              rawPartRow[i] );
-      rawPartRow[i] = val;
-      if ( val == null && data.repeatedFields.get( i ) && data.previousRow != null ) {
-        rawPartRow[i] = data.previousRow[outIdx];
-      }
-    }
-    data.previousRow = RowDataUtil.addRowData( baseOutputRow, data.totalpreviousfields, rawPartRow );
-    return data.previousRow;
-  }
 
 }

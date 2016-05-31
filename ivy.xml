@@ -19,9 +19,9 @@
     </publications>
 
     <dependencies defaultconf="default->default">
-        <dependency org="pentaho-kettle" name="kettle-core" rev="${dependency.kettle.revision.sera}" conf="dev->default"
+        <dependency org="pentaho-kettle" name="kettle-core" rev="${dependency.kettle.revision}" conf="dev->default"
                     changing="true"/>
-        <dependency org="pentaho-kettle" name="kettle-engine" rev="${dependency.kettle.revision.sera}"
+        <dependency org="pentaho-kettle" name="kettle-engine" rev="${dependency.kettle.revision}"
                     conf="dev->default" changing="true"/>
         <dependency org="pentaho-kettle" name="kettle-ui-swt" rev="${dependency.kettle.revision}" conf="dev->default"
                     changing="true"/>
@@ -50,8 +50,7 @@
 
         <dependency org="org.slf4j" name="slf4j-api" rev="1.7.5" transitive="false"/>
         <dependency org="org.slf4j" name="slf4j-log4j12" rev="1.7.5" transitive="false"/>
-        <dependency org="com.jayway.jsonpath" name="json-path" rev="2.1.0" transitive="false"/>
-        <dependency org="net.minidev" name="json-smart" rev="2.2" transitive="false"/>
+        <dependency org="com.jayway.jsonpath" name="json-path" rev="2.2.0" transitive="false"/>
         <dependency org="com.fasterxml.jackson.core" name="jackson-databind" rev="2.7.4"/>
 
     </dependencies>

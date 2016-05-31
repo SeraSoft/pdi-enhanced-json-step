@@ -80,14 +80,6 @@ public class JsonInputData extends BaseFileInputStepData implements StepDataInte
   public long rownr;
   public int indexSourceField;
 
-  @Deprecated
-  public JsonReader jsonReader;
-  @Deprecated
-  public List<NJSONArray> resultList;
-
-  @Deprecated
-  public String stringToParse;
-
   public Iterator<InputStream> inputs;
   public IJsonReader reader;
   public RowSet readerRowSet;
