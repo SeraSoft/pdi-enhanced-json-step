@@ -35,8 +35,6 @@ import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.JsonNodeFactory;
 import org.codehaus.jackson.node.ObjectNode;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.ResultFile;
 import org.pentaho.di.core.exception.KettleException;
@@ -83,7 +81,7 @@ public class JsonOutput extends BaseStep implements StepInterface {
 
         if (!sameGroup( prevRow, row )) {
             // Otput the new row
-            outPutRow(row);
+            outPutRow(prevRow);
             jsonItems = new ArrayList<>();
         }
 
@@ -175,7 +173,7 @@ public class JsonOutput extends BaseStep implements StepInterface {
 
         Object[] r = getRow(); // This also waits for a row to be finished.
         if (r == null) {
-            outPutRow(r);
+            outPutRow(prevRow);
             setOutputDone();
             return false;
         }
@@ -222,7 +220,7 @@ public class JsonOutput extends BaseStep implements StepInterface {
         initDataFieldsPositionsArray();
 
 
-        if (initKeyFieldsIndexesArray(r)) return true;
+        if (initKeyFieldsPositionArray(r)) return true;
         return false;
     }
 
@@ -241,7 +239,7 @@ public class JsonOutput extends BaseStep implements StepInterface {
         }
     }
 
-    private boolean initKeyFieldsIndexesArray(Object[] r) {
+    private boolean initKeyFieldsPositionArray(Object[] r) {
         data.keysGroupIndexes = new int[ meta.getKeyFields().length ];
 
         for ( int i = 0; i < meta.getKeyFields().length; i++ ) {
@@ -286,10 +284,15 @@ public class JsonOutput extends BaseStep implements StepInterface {
             String[] keyRow = new String[meta.getKeyFields().length];
 
             for (int i=0; i<meta.getKeyFields().length; i++) {
-                keyRow[i] = meta.getKeyFields()[i].getFieldName();
+                try {
+                    keyRow[i] = data.inputRowMeta.getString(rowData, data.keysGroupIndexes[ i ]);
+                } catch (KettleValueException e) {
+                    // TODO - Properly handle the exception
+                    // e.printStackTrace();
+                }
             }
 
-            Object[] outputRowData = RowDataUtil.addValueData(keyRow, 1, value);
+            Object[] outputRowData = RowDataUtil.addValueData(keyRow, meta.getKeyFields().length, value);
             incrementLinesOutput();
             putRow(data.outputRowMeta, outputRowData);
         }
