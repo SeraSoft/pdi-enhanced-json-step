@@ -42,6 +42,7 @@ import org.pentaho.di.core.exception.KettleStepException;
 import org.pentaho.di.core.exception.KettleValueException;
 import org.pentaho.di.core.row.RowDataUtil;
 import org.pentaho.di.core.row.RowMeta;
+import org.pentaho.di.core.row.ValueMeta;
 import org.pentaho.di.core.row.ValueMetaInterface;
 import org.pentaho.di.core.row.value.ValueMetaString;
 import org.pentaho.di.core.vfs.KettleVFS;
@@ -79,8 +80,9 @@ public class JsonOutput extends BaseStep implements StepInterface {
 
     public void manageRowItems(Object[] row) throws KettleException {
 
-        if (!sameGroup( prevRow, row )) {
-            // Otput the new row
+        if (data.isGenLoopOverKey() && !sameGroup( prevRow, row ) && jsonItems.size()>0) {
+            // Output the new row
+            logDebug("Record Num: " + data.nrRow + " - Generating JSON chunk");
             outPutRow(prevRow);
             jsonItems = new ArrayList<>();
         }
@@ -155,10 +157,18 @@ public class JsonOutput extends BaseStep implements StepInterface {
                     break;
             }
         }
-        jsonItems.add(itemNode);
 
+        jsonItems.add(itemNode);
         prevRow = data.inputRowMeta.cloneRow( row ); // copy the row to previous
         data.nrRow++;
+
+        if (meta.getSplitOutputAfter() > 0 && (data.nrRow) % meta.getSplitOutputAfter() == 0) {
+            // Output the new row
+            logDebug("Record Num: " + data.nrRow + " - Generating JSON chunk");
+            outPutRow(prevRow);
+            jsonItems = new ArrayList<>();
+        }
+
     }
 
     // Is the row r of the same group as previous?
@@ -186,7 +196,7 @@ public class JsonOutput extends BaseStep implements StepInterface {
 
         manageRowItems(r);
 
-        if (data.writeToFile && !data.outputValue) {
+        if (data.isWriteToFile() && !data.isOutputValue()) {
             putRow(data.inputRowMeta, r); // in case we want it go further...
             incrementLinesOutput();
         }
@@ -206,14 +216,16 @@ public class JsonOutput extends BaseStep implements StepInterface {
         // Init previous row copy to this first row
         prevRow = data.inputRowMeta.cloneRow( r ); // copy the row to previous
 
-        if (data.outputValue) {
+        if (data.isOutputValue()) {
             // Create new structure for output fields
             data.outputRowMeta = new RowMeta();
-
+            JsonOutputKeyField[] keyFields = meta.getKeyFields();
             for (int i=0; i<meta.getKeyFields().length; i++) {
-                data.outputRowMeta.addValueMeta(i, new ValueMetaString(meta.getKeyFields()[i].getFieldName()));
+                ValueMetaInterface vmi = data.inputRowMeta.getValueMeta(data.inputRowMeta.indexOfValue(keyFields[i].getFieldName()));
+                data.outputRowMeta.addValueMeta(i, vmi);
             }
 
+            // This is JSON block's column
             data.outputRowMeta.addValueMeta(meta.getKeyFields().length, new ValueMetaString(meta.getOutputValue()));
         }
 
@@ -259,17 +271,27 @@ public class JsonOutput extends BaseStep implements StepInterface {
         // We can now output an object
         String value = null;
 
+        if (jsonItems == null || jsonItems.size()==0)
+            return;
+
         try {
-            if (jsonItems != null) {
+            if (jsonItems != null && jsonItems.size()>0) {
                 if (meta.getJsonBloc() != null && meta.getJsonBloc().length()>0) {
                     ObjectNode theNode = new ObjectNode(nc);
                     // TBD Try to understand if this can have a performance impact and do it better...
 
                     theNode.put(meta.getJsonBloc(), mapper.readTree(mapper.writeValueAsString(jsonItems.size() > 1
                             ? jsonItems : (!meta.isUseArrayWithSingleInstance() ? jsonItems.get(0) : jsonItems))));
-                    value = mapper.writeValueAsString(theNode);
+                    if (meta.isJsonPrittified())
+                        value = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(theNode);
+                    else
+                        value = mapper.writeValueAsString(theNode);
                 } else {
-                    value = mapper.writeValueAsString((jsonItems.size() > 1
+                    if (meta.isJsonPrittified())
+                        value = mapper.writerWithDefaultPrettyPrinter().writeValueAsString((jsonItems.size() > 1
+                                ? jsonItems : (!meta.isUseArrayWithSingleInstance() ? jsonItems.get(0) : jsonItems)));
+                    else
+                        value = mapper.writeValueAsString((jsonItems.size() > 1
                             ? jsonItems : (!meta.isUseArrayWithSingleInstance() ? jsonItems.get(0) : jsonItems)));
                 }
             }
@@ -279,13 +301,31 @@ public class JsonOutput extends BaseStep implements StepInterface {
             e.printStackTrace();
         }
 
-        if (data.outputValue && data.outputRowMeta != null) {
+        if (data.isOutputValue() && data.outputRowMeta != null) {
 
-            String[] keyRow = new String[meta.getKeyFields().length];
+            Object[] keyRow = new Object[meta.getKeyFields().length];
 
             for (int i=0; i<meta.getKeyFields().length; i++) {
                 try {
-                    keyRow[i] = data.inputRowMeta.getString(rowData, data.keysGroupIndexes[ i ]);
+                    ValueMetaInterface vmi = data.inputRowMeta.getValueMeta(data.keysGroupIndexes[ i ]);
+                    switch (vmi.getType()) {
+                        case ValueMetaInterface.TYPE_BOOLEAN:
+                            keyRow[i] = data.inputRowMeta.getBoolean(rowData, data.keysGroupIndexes[ i ]);
+                            break;
+
+                        case ValueMetaInterface.TYPE_INTEGER:
+                            keyRow[i] = data.inputRowMeta.getInteger(rowData, data.keysGroupIndexes[ i ]);
+                            break;
+                        case ValueMetaInterface.TYPE_NUMBER:
+                            keyRow[i] = data.inputRowMeta.getNumber(rowData, data.keysGroupIndexes[ i ]);
+                            break;
+                        case ValueMetaInterface.TYPE_BIGNUMBER:
+                            keyRow[i] = data.inputRowMeta.getBigNumber(rowData, data.keysGroupIndexes[ i ]);
+                            break;
+                        default:
+                            keyRow[i] = data.inputRowMeta.getString(rowData, data.keysGroupIndexes[ i ]);
+                            break;
+                    }
                 } catch (KettleValueException e) {
                     // TODO - Properly handle the exception
                     // e.printStackTrace();
@@ -297,7 +337,7 @@ public class JsonOutput extends BaseStep implements StepInterface {
             putRow(data.outputRowMeta, outputRowData);
         }
 
-        if (data.writeToFile) {
+        if (data.isWriteToFile()) {
             // Open a file
             if (!openNewFile()) {
                 throw new KettleStepException(BaseMessages.getString(
@@ -320,10 +360,12 @@ public class JsonOutput extends BaseStep implements StepInterface {
         data = (JsonOutputData) sdi;
         if (super.init(smi, sdi)) {
 
-            data.writeToFile = (meta.getOperationType() != JsonOutputMeta.OPERATION_TYPE_OUTPUT_VALUE);
-            data.outputValue = (meta.getOperationType() != JsonOutputMeta.OPERATION_TYPE_WRITE_TO_FILE);
+            data.setWriteToFile((meta.getOperationType() != JsonOutputMeta.OPERATION_TYPE_OUTPUT_VALUE));
+            data.setOutputValue((meta.getOperationType() != JsonOutputMeta.OPERATION_TYPE_WRITE_TO_FILE));
+            data.setGenFlat((meta.getGenerationType() != JsonOutputMeta.GENERATON_TYPE_FLAT));
+            data.setGenLoopOverKey((meta.getOperationType() != JsonOutputMeta.GENERATON_TYPE_LOOP_OVER_KEY));
 
-            if (data.outputValue) {
+            if (data.isOutputValue()) {
                 // We need to have output field name
                 if (Const.isEmpty(environmentSubstitute(meta.getOutputValue()))) {
                     logError(BaseMessages.getString(PKG, "JsonOutput.Error.MissingOutputFieldName"));
@@ -332,7 +374,7 @@ public class JsonOutput extends BaseStep implements StepInterface {
                     return false;
                 }
             }
-            if (data.writeToFile) {
+            if (data.isWriteToFile()) {
                 // We need to have output field name
                 if (!meta.isServletOutput() && Const.isEmpty(meta.getFileName())) {
                     logError(BaseMessages.getString(PKG, "JsonOutput.Error.MissingTargetFilename"));
@@ -360,12 +402,11 @@ public class JsonOutput extends BaseStep implements StepInterface {
     public void dispose(StepMetaInterface smi, StepDataInterface sdi) {
         meta = (JsonOutputMeta) smi;
         data = (JsonOutputData) sdi;
-        if (data.ja != null) {
-            data.ja = null;
+
+        if (jsonItems != null) {
+            jsonItems = null;
         }
-        if (data.jg != null) {
-            data.jg = null;
-        }
+
         closeFile();
         super.dispose(smi, sdi);
 

@@ -136,6 +136,12 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
     @Injection(name = "PRITTIFY", group = "GENERAL")
     private boolean jsonPrittified;
 
+    /**
+     * Choose if you want the output prittyfied
+     */
+    @Injection(name = "SPLIT_OUTPUT_AFTER", group = "GENERAL")
+    private int splitOutputAfter;
+
 
   /* THE FIELD SPECIFICATIONS ... */
 
@@ -401,6 +407,24 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
     }
 
     /**
+     *
+     *
+     * @return
+     */
+
+    public int getSplitOutputAfter() {
+        return splitOutputAfter;
+    }
+
+    /**
+     *
+     * @param splitOutputAfter
+     */
+    public void setSplitOutputAfter(int splitOutputAfter) {
+        this.splitOutputAfter = splitOutputAfter;
+    }
+
+    /**
      * @return Returns the outputFields.
      */
     public JsonOutputField[] getOutputFields() {
@@ -436,6 +460,7 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
     }
 
     public Object clone() {
+
         JsonOutputMeta retval = (JsonOutputMeta) super.clone();
         int nrOutputFields = outputFields.length;
 
@@ -471,6 +496,7 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
             generationType = getGenerationTypeByCode(Const.NVL(XMLHandler.getTagValue(stepnode, "generation_type"), ""));
             useArrayWithSingleInstance = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "use_arrays_with_single_instance"));
             jsonPrittified = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "json_prittified"));
+            splitOutputAfter = Integer.parseInt(XMLHandler.getTagValue(stepnode, "split_output_after"));
 
             encoding = XMLHandler.getTagValue(stepnode, "encoding");
             addToResult = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "addToResult"));
@@ -521,6 +547,7 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
         encoding = Const.XML_ENCODING;
         outputValue = "outputValue";
         jsonBloc = "result";
+        splitOutputAfter = 0;
         operationType = OPERATION_TYPE_WRITE_TO_FILE;
         generationType = GENERATON_TYPE_FLAT;
         extension = "js";
@@ -549,10 +576,22 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
                           VariableSpace space, Repository repository, IMetaStore metaStore) throws KettleStepException {
 
         if (getOperationType() != OPERATION_TYPE_WRITE_TO_FILE) {
-            ValueMetaInterface v =
+            RowMetaInterface rowMeta = row.clone();
+            row.clear();
+
+            JsonOutputKeyField[] keyFields = this.getKeyFields();
+            for (int i=0; i<this.getKeyFields().length; i++) {
+                ValueMetaInterface vmi = rowMeta.getValueMeta(rowMeta.indexOfValue(keyFields[i].getFieldName()));
+                row.addValueMeta(i, vmi);
+            }
+
+            // This is JSON block's column
+            row.addValueMeta(this.getKeyFields().length, new ValueMetaString(this.getOutputValue()));
+
+            /* ValueMetaInterface v =
                     new ValueMetaString(space.environmentSubstitute(this.getOutputValue()));
             v.setOrigin(name);
-            row.addValueMeta(v);
+            row.addValueMeta(v);*/
         }
     }
 
@@ -565,6 +604,7 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
         retval.append("    ").append(XMLHandler.addTagValue("generation_type", getGenerationTypeCode(generationType)));
         retval.append("    ").append(XMLHandler.addTagValue("use_arrays_with_single_instance", useArrayWithSingleInstance));
         retval.append("    ").append(XMLHandler.addTagValue("json_prittified", jsonPrittified));
+        retval.append("    ").append(XMLHandler.addTagValue("split_output_after", Integer.toString(splitOutputAfter)));
         retval.append("    ").append(XMLHandler.addTagValue("encoding", encoding));
         retval.append("    ").append(XMLHandler.addTagValue("addtoresult", addToResult));
         retval.append("    <file>" + Const.CR);
@@ -619,6 +659,7 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
             generationType = getGenerationTypeByCode(Const.NVL(rep.getStepAttributeString(id_step, "generation_type"), ""));
             useArrayWithSingleInstance = rep.getStepAttributeBoolean(id_step, "use_arrays_with_single_instance");
             jsonPrittified = rep.getStepAttributeBoolean(id_step, "json_prittified");
+            splitOutputAfter = Integer.parseInt(rep.getStepAttributeString(id_step, "split_output_after"));
             encoding = rep.getStepAttributeString(id_step, "encoding");
             addToResult = rep.getStepAttributeBoolean(id_step, "addtoresult");
 
@@ -684,6 +725,7 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
             rep.saveStepAttribute(id_transformation, id_step, "use_arrays_with_single_instance", useArrayWithSingleInstance);
             rep.saveStepAttribute(id_transformation, id_step, "generation_type", getGenerationTypeCode(operationType));
             rep.saveStepAttribute(id_transformation, id_step, "json_prittified", jsonPrittified);
+            rep.saveStepAttribute(id_transformation, id_step, "split_output_after", splitOutputAfter);
             rep.saveStepAttribute(id_transformation, id_step, "encoding", encoding);
             rep.saveStepAttribute(id_transformation, id_step, "addtoresult", addToResult);
 

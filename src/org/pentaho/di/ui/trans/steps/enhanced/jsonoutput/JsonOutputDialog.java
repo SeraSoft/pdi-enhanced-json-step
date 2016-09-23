@@ -145,6 +145,10 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
     private Button wJSONPrittified;
     private FormData fdlJSONPrittified, fdJSONPrittified;
 
+    private Label wlSplitOutputAfter;
+    private TextVar wSplitOutputAfter;
+    private FormData fdlSplitOutputAfter, fdSplitOutputAfter;
+
     private Label wlAddTime;
     private Button wAddTime;
     private FormData fdlAddTime, fdAddTime;
@@ -605,6 +609,29 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
             }
         });
 
+        wlSplitOutputAfter = new Label(wSettings, SWT.RIGHT);
+        wlSplitOutputAfter.setText(BaseMessages.getString(PKG, "JsonOutputDialog.splitOutputAfter.Label"));
+        props.setLook(wlSplitOutputAfter);
+        fdlSplitOutputAfter = new FormData();
+        fdlSplitOutputAfter.left = new FormAttachment(0, 0);
+        fdlSplitOutputAfter.top = new FormAttachment(wJSONPrittified, margin);
+        fdlSplitOutputAfter.right = new FormAttachment(middle, -margin);
+        wlSplitOutputAfter.setLayoutData(fdlSplitOutputAfter);
+        wSplitOutputAfter = new TextVar(transMeta, wSettings, SWT.BORDER | SWT.READ_ONLY);
+        wSplitOutputAfter.setEditable(true);
+        wSplitOutputAfter.setToolTipText("JsonOutputDialog.splitOutputAfter.Tooltip");
+        props.setLook(wSplitOutputAfter);
+        fdSplitOutputAfter = new FormData();
+        fdSplitOutputAfter.left = new FormAttachment(middle, 0);
+        fdSplitOutputAfter.top = new FormAttachment(wJSONPrittified, margin);
+        fdSplitOutputAfter.right = new FormAttachment(100, 0);
+        wSplitOutputAfter.setLayoutData(fdSplitOutputAfter);
+        wSplitOutputAfter.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e) {
+                input.setChanged();
+            }
+        });
+
         fdSettings = new FormData();
         fdSettings.left = new FormAttachment(0, margin);
         fdSettings.top = new FormAttachment(wOperation, 2 * margin);
@@ -1011,6 +1038,7 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
         wOutputValue.setText(Const.NVL(input.getOutputValue(), ""));
         wUseArrayWithSingleInstance.setSelection(input.isUseArrayWithSingleInstance());
         wJSONPrittified.setSelection(input.isJsonPrittified());
+        wSplitOutputAfter.setText(Integer.toString(input.getSplitOutputAfter()));
         wOperation.setText(JsonOutputMeta.getOperationTypeDesc(input.getOperationType()));
         wGeneration.setText(JsonOutputMeta.getGenerationTypeDesc(input.getGenerationType()));
         wFilename.setText(Const.NVL(input.getFileName(), ""));
@@ -1081,6 +1109,7 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
         jsometa.setUseArrayWithSingleInstance(wUseArrayWithSingleInstance.getSelection());
         jsometa.setOperationType(JsonOutputMeta.getOperationTypeByDesc(wOperation.getText()));
         jsometa.setJsonPrittified(wJSONPrittified.getSelection());
+        jsometa.setSplitOutputAfter(Integer.parseInt(wSplitOutputAfter.getText()));
         jsometa.setGenerationType(JsonOutputMeta.getGenerationTypeByDesc(wGeneration.getText()));
         jsometa.setCreateParentFolder(wCreateParentFolder.getSelection());
         jsometa.setFileName(wFilename.getText());

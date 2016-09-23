@@ -50,6 +50,8 @@ import org.pentaho.di.trans.TransHopMeta;
 import org.pentaho.di.trans.TransMeta;
 import org.pentaho.di.trans.step.StepInterface;
 import org.pentaho.di.trans.step.StepMeta;
+import org.pentaho.di.trans.steps.datagrid.DataGrid;
+import org.pentaho.di.trans.steps.datagrid.DataGridMeta;
 import org.pentaho.di.trans.steps.dummytrans.DummyTransMeta;
 import org.pentaho.di.trans.steps.mock.StepMockHelper;
 import org.pentaho.di.trans.steps.rowgenerator.RowGeneratorMeta;
@@ -66,6 +68,18 @@ import static org.mockito.Mockito.*;
 public class JsonOutputTest extends TestCase {
 
     private static final String EXPECTED_NON_COMPATIBILITY_JSON =
+            "{\"data\":[{\"state\":\"F11\",\"city\":\"Orlando\"},"
+                    + "{\"state\":\"Florida\",\"city\":\"Orlando\"},"
+                    + "{\"state\":\"Florida\",\"city\":\"Orlando\"},"
+                    + "{\"state\":\"Florida\",\"city\":\"Orlando\"},"
+                    + "{\"state\":\"Florida\",\"city\":\"Orlando\"},"
+                    + "{\"state\":\"Florida\",\"city\":\"Orlando\"},"
+                    + "{\"state\":\"Florida\",\"city\":\"Orlando\"},"
+                    + "{\"state\":\"Florida\",\"city\":\"Orlando\"},"
+                    + "{\"state\":\"Florida\",\"city\":\"Orlando\"},"
+                    + "{\"state\":\"Florida\",\"city\":\"Orlando\"}]}";
+
+/*    private static final String EXPECTED_NON_COMPATIBILITY_JSON =
             "{\"data\":[{\"id\":1,\"state\":\"Florida\",\"city\":\"Orlando\"},"
                     + "{\"id\":1,\"state\":\"Florida\",\"city\":\"Orlando\"},"
                     + "{\"id\":1,\"state\":\"Florida\",\"city\":\"Orlando\"},"
@@ -76,17 +90,8 @@ public class JsonOutputTest extends TestCase {
                     + "{\"id\":1,\"state\":\"Florida\",\"city\":\"Orlando\"},"
                     + "{\"id\":1,\"state\":\"Florida\",\"city\":\"Orlando\"},"
                     + "{\"id\":1,\"state\":\"Florida\",\"city\":\"Orlando\"}]}";
-
-    private static final String EXPECTED_COMPATIBILITY_MODE_JSON =
-            "{\"data\":[{\"id\":1},{\"state\":\"Florida\"},{\"city\":\"Orlando\"},{\"id\":1},{\"state\":\"Florida\"},"
-                    + "{\"city\":\"Orlando\"},{\"id\":1},{\"state\":\"Florida\"},{\"city\":\"Orlando\"},{\"id\":1},"
-                    + "{\"state\":\"Florida\"},{\"city\":\"Orlando\"},{\"id\":1},{\"state\":\"Florida\"},"
-                    + "{\"city\":\"Orlando\"},{\"id\":1},{\"state\":\"Florida\"},{\"city\":\"Orlando\"},{\"id\":1},"
-                    + "{\"state\":\"Florida\"},{\"city\":\"Orlando\"},{\"id\":1},{\"state\":\"Florida\"},"
-                    + "{\"city\":\"Orlando\"},{\"id\":1},{\"state\":\"Florida\"},{\"city\":\"Orlando\"},{\"id\":1},"
-                    + "{\"state\":\"Florida\"},{\"city\":\"Orlando\"}]}";
-
-    /**
+*/
+   /**
      * Creates a row generator step for this class..
      *
      * @param name
@@ -104,9 +109,9 @@ public class JsonOutputTest extends TestCase {
         StepMeta generateRowsStep = new StepMeta(rowGeneratorPid, testFileOutputName, rowGeneratorMeta);
 
         // Set the field names, types and values
-        rowGeneratorMeta.setFieldName(new String[]{"Id", "State", "City"});
+        rowGeneratorMeta.setFieldName(new String[]{"Id", "Field1", "Field2"});
         rowGeneratorMeta.setFieldType(new String[]{"Integer", "String", "String"});
-        rowGeneratorMeta.setValue(new String[]{"1", "Florida", "Orlando"});
+        rowGeneratorMeta.setValue(new String[]{"1", "F11", "F12"});
         rowGeneratorMeta.setFieldLength(new int[]{-1, -1, -1});
         rowGeneratorMeta.setFieldPrecision(new int[]{-1, -1, -1});
         rowGeneratorMeta.setGroup(new String[]{"", "", ""});
@@ -118,6 +123,43 @@ public class JsonOutputTest extends TestCase {
         // return the step meta
         return generateRowsStep;
     }
+
+    public StepMeta createDatagridMeta(String datagridStepName, PluginRegistry registry) {
+
+        DataGridMeta dataGridMeta = new DataGridMeta();
+        String dgPluginId = registry.getPluginId(StepPluginType.class, dataGridMeta);
+        StepMeta generateRowsStep = new StepMeta(dgPluginId, datagridStepName, dataGridMeta);
+
+        dataGridMeta.setFieldName(new String[]{"Id", "Field1", "Field2"});
+        dataGridMeta.setFieldType(new String[]{"Integer", "String", "String"});
+        dataGridMeta.setFieldLength(new int[]{-1, -1, -1});
+        dataGridMeta.setFieldPrecision(new int[]{-1, -1, -1});
+        dataGridMeta.setGroup(new String[]{"", "", ""});
+        dataGridMeta.setDecimal(new String[]{"", "", ""});
+        dataGridMeta.setCurrency(new String[]{"", "", ""});
+        dataGridMeta.setFieldFormat(new String[]{"", "", ""});
+        return generateRowsStep;
+    }
+
+    public List<List<String>> createDataLines() {
+        List<List<String>> list = new ArrayList<List<String>>();
+
+        RowMetaInterface rowMetaInterface = createResultRowMetaInterface();
+
+        Object[] r1 = new Object[]{new Long(1L), "F11", "F12"};
+        Object[] r2 = new Object[]{new Long(1L), "F21", "F22"};
+        Object[] r3 = new Object[]{new Long(1L), "F31", "F32"};
+        Object[] r4 = new Object[]{new Long(2L), "F41", "F42"};
+        Object[] r5 = new Object[]{new Long(2L), "F51", "F52"};
+        Object[] r6 = new Object[]{new Long(2L), "F61", "F62"};
+        Object[] r7 = new Object[]{new Long(3L), "F71", "F72"};
+        Object[] r8 = new Object[]{new Long(3L), "F81", "F82"};
+        Object[] r9 = new Object[]{new Long(3L), "F91", "F92"};
+
+
+        return list;
+    }
+
 
     /**
      * Create a dummy step for this class.
@@ -147,16 +189,15 @@ public class JsonOutputTest extends TestCase {
 
         RowMetaInterface rowMetaInterface = createResultRowMetaInterface();
 
-        Object[] r1 = new Object[]{new Long(1L), "Orlando", "Florida"};
-        Object[] r2 = new Object[]{new Long(1L), "Orlando", "Florida"};
-        Object[] r3 = new Object[]{new Long(1L), "Orlando", "Florida"};
-        Object[] r4 = new Object[]{new Long(1L), "Orlando", "Florida"};
-        Object[] r5 = new Object[]{new Long(1L), "Orlando", "Florida"};
-        Object[] r6 = new Object[]{new Long(1L), "Orlando", "Florida"};
-        Object[] r7 = new Object[]{new Long(1L), "Orlando", "Florida"};
-        Object[] r8 = new Object[]{new Long(1L), "Orlando", "Florida"};
-        Object[] r9 = new Object[]{new Long(1L), "Orlando", "Florida"};
-        Object[] r10 = new Object[]{new Long(1L), "Orlando", "Florida"};
+        Object[] r1 = new Object[]{new Long(1L), "F11", "F12"};
+        Object[] r2 = new Object[]{new Long(1L), "F21", "F22"};
+        Object[] r3 = new Object[]{new Long(1L), "F31", "F32"};
+        Object[] r4 = new Object[]{new Long(2L), "F41", "F42"};
+        Object[] r5 = new Object[]{new Long(2L), "F51", "F52"};
+        Object[] r6 = new Object[]{new Long(2L), "F61", "F62"};
+        Object[] r7 = new Object[]{new Long(3L), "F71", "F72"};
+        Object[] r8 = new Object[]{new Long(3L), "F81", "F82"};
+        Object[] r9 = new Object[]{new Long(3L), "F91", "F92"};
 
         list.add(new RowMetaAndData(rowMetaInterface, r1));
         list.add(new RowMetaAndData(rowMetaInterface, r2));
@@ -167,7 +208,6 @@ public class JsonOutputTest extends TestCase {
         list.add(new RowMetaAndData(rowMetaInterface, r7));
         list.add(new RowMetaAndData(rowMetaInterface, r8));
         list.add(new RowMetaAndData(rowMetaInterface, r9));
-        list.add(new RowMetaAndData(rowMetaInterface, r10));
         return list;
     }
 
@@ -266,7 +306,7 @@ public class JsonOutputTest extends TestCase {
         return jsonOutputStep;
     }
 
-    public String test(boolean compatibilityMode) throws Exception {
+    public String test() throws Exception {
         KettleEnvironment.init();
 
         // Create a new transformation...
@@ -331,13 +371,8 @@ public class JsonOutputTest extends TestCase {
     // The actual tests
 
     public void testNonCompatibilityMode() throws Exception {
-        String jsonStructure = test(false);
+        String jsonStructure = test();
         Assert.assertTrue(jsonEquals(EXPECTED_NON_COMPATIBILITY_JSON, jsonStructure));
-    }
-
-    public void testCompatibilityMode() throws Exception {
-        String jsonStructure = test(true);
-        Assert.assertEquals(EXPECTED_COMPATIBILITY_MODE_JSON, jsonStructure);
     }
 
     /* PDI-7243 */

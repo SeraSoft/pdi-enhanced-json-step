@@ -49,12 +49,12 @@ public class JsonOutputData extends BaseStepData implements StepDataInterface {
     public int nrFields;
     public int[] fieldIndexes;
     public int[] keysGroupIndexes;
-    public JSONObject jg;
-    public JSONArray ja;
     public int nrRow;
 
-    public boolean outputValue;
-    public boolean writeToFile;
+    private boolean outputValue;
+    private boolean writeToFile;
+    private boolean genFlat;
+    private boolean genLoopOverKey;
 
     public String realBlocName;
     public int splitnr;
@@ -65,11 +65,44 @@ public class JsonOutputData extends BaseStepData implements StepDataInterface {
      */
     public JsonOutputData() {
         super();
-        this.ja = new JSONArray();
+
         this.nrRow = 0;
         this.outputValue = false;
         this.writeToFile = false;
+        this.genFlat = false;
+        this.genLoopOverKey = false;
         this.writer = null;
     }
 
+    public boolean isGenFlat() {
+        return genFlat;
+    }
+
+    public void setGenFlat(boolean genFlat) {
+        this.genFlat = genFlat;
+    }
+
+    public boolean isGenLoopOverKey() {
+        return genLoopOverKey;
+    }
+
+    public void setGenLoopOverKey(boolean genLoopOverKey) {
+        this.genLoopOverKey = genLoopOverKey;
+    }
+
+    public boolean isOutputValue() {
+        return outputValue;
+    }
+
+    public void setOutputValue(boolean outputValue) {
+        this.outputValue = outputValue;
+    }
+
+    public boolean isWriteToFile() {
+        return writeToFile;
+    }
+
+    public void setWriteToFile(boolean writeToFile) {
+        this.writeToFile = writeToFile;
+    }
 }
