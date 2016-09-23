@@ -44,6 +44,8 @@ import org.pentaho.di.core.row.RowDataUtil;
 import org.pentaho.di.core.row.RowMeta;
 import org.pentaho.di.core.row.ValueMeta;
 import org.pentaho.di.core.row.ValueMetaInterface;
+import org.pentaho.di.core.row.value.ValueMetaInteger;
+import org.pentaho.di.core.row.value.ValueMetaNumber;
 import org.pentaho.di.core.row.value.ValueMetaString;
 import org.pentaho.di.core.vfs.KettleVFS;
 import org.pentaho.di.i18n.BaseMessages;
@@ -72,6 +74,7 @@ public class JsonOutput extends BaseStep implements StepInterface {
     private JsonNodeFactory nc;
     private List<ObjectNode> jsonItems;
     private ObjectMapper mapper;
+    private int startPagePos;
 
     public JsonOutput(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
                       Trans trans) {
@@ -208,6 +211,7 @@ public class JsonOutput extends BaseStep implements StepInterface {
         nc = new ObjectMapper().getNodeFactory();
         mapper = new ObjectMapper();
         jsonItems = new ArrayList<>();
+        startPagePos = 1;
 
         first = false;
         data.inputRowMeta = getInputRowMeta();
@@ -227,6 +231,21 @@ public class JsonOutput extends BaseStep implements StepInterface {
 
             // This is JSON block's column
             data.outputRowMeta.addValueMeta(meta.getKeyFields().length, new ValueMetaString(meta.getOutputValue()));
+        }
+
+
+        int fieldLength = meta.getKeyFields().length + 1;
+        if (meta.getJsonSizeFieldname() != null && meta.getJsonSizeFieldname().length()>0) {
+            data.outputRowMeta.addValueMeta(fieldLength, new ValueMetaInteger(meta.getJsonSizeFieldname()));
+            fieldLength++;
+        }
+        if (meta.getJsonPageStartsAtFieldname() != null && meta.getJsonPageStartsAtFieldname().length()>0) {
+            data.outputRowMeta.addValueMeta(fieldLength, new ValueMetaInteger(meta.getJsonPageStartsAtFieldname()));
+            fieldLength++;
+        }
+        if (meta.getJsonPageEndsAtFieldname() != null && meta.getJsonPageEndsAtFieldname().length()>0) {
+            data.outputRowMeta.addValueMeta(fieldLength, new ValueMetaInteger(meta.getJsonPageEndsAtFieldname()));
+            fieldLength++;
         }
 
         initDataFieldsPositionsArray();
@@ -301,6 +320,8 @@ public class JsonOutput extends BaseStep implements StepInterface {
             e.printStackTrace();
         }
 
+        int jsonLength = value.length();
+
         if (data.isOutputValue() && data.outputRowMeta != null) {
 
             Object[] keyRow = new Object[meta.getKeyFields().length];
@@ -312,7 +333,6 @@ public class JsonOutput extends BaseStep implements StepInterface {
                         case ValueMetaInterface.TYPE_BOOLEAN:
                             keyRow[i] = data.inputRowMeta.getBoolean(rowData, data.keysGroupIndexes[ i ]);
                             break;
-
                         case ValueMetaInterface.TYPE_INTEGER:
                             keyRow[i] = data.inputRowMeta.getInteger(rowData, data.keysGroupIndexes[ i ]);
                             break;
@@ -332,8 +352,29 @@ public class JsonOutput extends BaseStep implements StepInterface {
                 }
             }
 
-            Object[] outputRowData = RowDataUtil.addValueData(keyRow, meta.getKeyFields().length, value);
+            Object[] fieldsQueueArray = new Object[4];
+
+            fieldsQueueArray[0] = value;
+            int nextFieldPos = 1;
+
+
+            if (meta.getJsonSizeFieldname() != null && meta.getJsonSizeFieldname().length()>0) {
+                fieldsQueueArray[nextFieldPos] = new Long(jsonLength);
+                nextFieldPos++;
+            }
+            if (meta.getJsonPageStartsAtFieldname() != null && meta.getJsonPageStartsAtFieldname().length()>0) {
+                fieldsQueueArray[nextFieldPos] = new Long(startPagePos);
+                startPagePos = data.nrRow + 1;
+                nextFieldPos++;
+            }
+            if (meta.getJsonPageEndsAtFieldname() != null && meta.getJsonPageEndsAtFieldname().length()>0) {
+                fieldsQueueArray[nextFieldPos] = new Long(data.nrRow);
+                nextFieldPos++;
+            }
+
+            Object[] outputRowData = RowDataUtil.addRowData(keyRow, keyRow.length, fieldsQueueArray);
             incrementLinesOutput();
+
             putRow(data.outputRowMeta, outputRowData);
         }
 

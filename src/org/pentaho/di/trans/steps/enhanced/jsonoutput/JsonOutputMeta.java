@@ -35,6 +35,8 @@ import org.pentaho.di.core.injection.InjectionDeep;
 import org.pentaho.di.core.injection.InjectionSupported;
 import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.core.row.ValueMetaInterface;
+import org.pentaho.di.core.row.value.ValueMetaInteger;
+import org.pentaho.di.core.row.value.ValueMetaNumber;
 import org.pentaho.di.core.row.value.ValueMetaString;
 import org.pentaho.di.core.variables.VariableSpace;
 import org.pentaho.di.core.xml.XMLHandler;
@@ -217,6 +219,36 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
     private boolean createparentfolder;
 
     private boolean doNotOpenNewFileInit;
+
+
+    private String jsonSizeFieldname;
+    private String jsonPageStartsAtFieldname;
+    private String jsonPageEndsAtFieldname;
+
+
+    public String getJsonSizeFieldname() {
+        return jsonSizeFieldname;
+    }
+
+    public void setJsonSizeFieldname(String jsonSizeFieldname) {
+        this.jsonSizeFieldname = jsonSizeFieldname;
+    }
+
+    public String getJsonPageStartsAtFieldname() {
+        return jsonPageStartsAtFieldname;
+    }
+
+    public void setJsonPageStartsAtFieldname(String jsonPageStartsAtFieldname) {
+        this.jsonPageStartsAtFieldname = jsonPageStartsAtFieldname;
+    }
+
+    public String getJsonPageEndsAtFieldname() {
+        return jsonPageEndsAtFieldname;
+    }
+
+    public void setJsonPageEndsAtFieldname(String jsonPageEndsAtFieldname) {
+        this.jsonPageEndsAtFieldname = jsonPageEndsAtFieldname;
+    }
 
     public JsonOutputMeta() {
         super(); // allocate BaseStepMeta
@@ -537,6 +569,11 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
                 outputFields[i].setJSONFragment(!"N".equalsIgnoreCase(XMLHandler.getTagValue(fnode, "json_fragment")));
                 outputFields[i].setRemoveIfBlank(!"N".equalsIgnoreCase(XMLHandler.getTagValue(fnode, "remove_if_blank")));
             }
+
+            jsonPageStartsAtFieldname = XMLHandler.getTagValue(stepnode, "additional_fields", "json_page_starts_at_field");
+            jsonPageEndsAtFieldname = XMLHandler.getTagValue(stepnode, "additional_fields", "json_page_ends_at_field");
+            jsonSizeFieldname = XMLHandler.getTagValue(stepnode, "additional_fields", "json_size_field");
+
         } catch (Exception e) {
             throw new KettleXMLException("Unable to load step info from XML", e);
         }
@@ -585,13 +622,23 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
                 row.addValueMeta(i, vmi);
             }
 
+
             // This is JSON block's column
             row.addValueMeta(this.getKeyFields().length, new ValueMetaString(this.getOutputValue()));
 
-            /* ValueMetaInterface v =
-                    new ValueMetaString(space.environmentSubstitute(this.getOutputValue()));
-            v.setOrigin(name);
-            row.addValueMeta(v);*/
+            int fieldLength = this.getKeyFields().length + 1;
+            if (this.jsonSizeFieldname != null && this.jsonSizeFieldname.length()>0) {
+                row.addValueMeta(fieldLength, new ValueMetaInteger(this.jsonSizeFieldname));
+                fieldLength++;
+            }
+            if (this.jsonPageStartsAtFieldname != null && this.jsonPageStartsAtFieldname.length()>0) {
+                row.addValueMeta(fieldLength, new ValueMetaInteger(this.jsonPageStartsAtFieldname));
+                fieldLength++;
+            }
+            if (this.jsonPageEndsAtFieldname != null && this.jsonPageEndsAtFieldname.length()>0) {
+                row.addValueMeta(fieldLength, new ValueMetaInteger(this.jsonPageEndsAtFieldname));
+                fieldLength++;
+            }
         }
     }
 
@@ -619,6 +666,11 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
         retval.append("      ").append(XMLHandler.addTagValue("doNotOpenNewFileInit", doNotOpenNewFileInit));
         retval.append("      ").append(XMLHandler.addTagValue("servlet_output", servletOutput));
         retval.append("      </file>" + Const.CR);
+        retval.append("     <additional_fields>" + Const.CR);
+        retval.append("      ").append(XMLHandler.addTagValue("json_page_starts_at_field", jsonPageStartsAtFieldname));
+        retval.append("      ").append(XMLHandler.addTagValue("json_page_ends_at_field", jsonPageEndsAtFieldname));
+        retval.append("      ").append(XMLHandler.addTagValue("json_size_field", jsonSizeFieldname));
+        retval.append("      </additional_fields>" + Const.CR);
 
         retval.append("    <key_fields>").append(Const.CR);
         for (int i = 0; i < keyFields.length; i++) {
@@ -673,6 +725,9 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
             createparentfolder = rep.getStepAttributeBoolean(id_step, "create_parent_folder");
             doNotOpenNewFileInit = rep.getStepAttributeBoolean(id_step, "doNotOpenNewFileInit");
             servletOutput = rep.getStepAttributeBoolean(id_step, "file_servlet_output");
+            jsonSizeFieldname = rep.getStepAttributeString(id_step, "json_size_field");
+            jsonPageStartsAtFieldname = rep.getStepAttributeString(id_step, "json_page_starts_at_field");
+            jsonPageEndsAtFieldname = rep.getStepAttributeString(id_step, "json_page_ends_at_field");
 
             int nrKeyFields = rep.countNrStepAttributes(id_step, "key_field_name");
 
@@ -739,6 +794,9 @@ public class JsonOutputMeta extends BaseStepMeta implements StepMetaInterface {
             rep.saveStepAttribute(id_transformation, id_step, "create_parent_folder", createparentfolder);
             rep.saveStepAttribute(id_transformation, id_step, "doNotOpenNewFileInit", doNotOpenNewFileInit);
             rep.saveStepAttribute(id_transformation, id_step, "file_servlet_output", servletOutput);
+            rep.saveStepAttribute(id_transformation, id_step, "json_size_field", jsonSizeFieldname);
+            rep.saveStepAttribute(id_transformation, id_step, "json_page_starts_at_field", jsonPageStartsAtFieldname);
+            rep.saveStepAttribute(id_transformation, id_step, "json_page_ends_at_field", jsonPageEndsAtFieldname);
 
             for (int i = 0; i < keyFields.length; i++) {
                 JsonOutputKeyField keyField = keyFields[i];

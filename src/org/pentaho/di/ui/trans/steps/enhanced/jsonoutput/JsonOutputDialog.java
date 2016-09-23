@@ -76,7 +76,7 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
     private CTabFolder wTabFolder;
     private FormData fdTabFolder;
 
-    private CTabItem wGeneralTab, wFieldsTab, wKeyConfigTab;
+    private CTabItem wGeneralTab, wFieldsTab, wKeyConfigTab, wAdditionalFieldsConfigTab;
     private FormData fdGeneralComp, fdFieldsComp, fdConfigComp;
 
     private Label wlEncoding;
@@ -169,6 +169,18 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
     private CCombo wGeneration;
     private FormData fdlGeneration;
     private FormData fdGeneration;
+
+    private Label wlJSONSizeFieldname;
+    private TextVar wJSONSizeFieldname;
+    private FormData fdlJSONSizeFieldname, fdJSONSizeFieldname;
+
+    private Label wlJSONPageStartAtFieldname;
+    private TextVar wJSONPageStartAtFieldname;
+    private FormData fdlJSONPageStartAtFieldname, fdJSONPageStartAtFieldname;
+
+    private Label wlJSONPageEndAtFieldname;
+    private TextVar wJSONPageEndAtFieldname;
+    private FormData fdlJSONPageEndAtFieldname, fdJSONPageEndAtFieldname;
 
     private Group wSettings;
     private FormData fdSettings;
@@ -286,7 +298,9 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
         // / END OF General TAB
         // ///////////////////////////////////////////////////////////
 
+        // ///////////////////////////////////////////////////////////
         // START OF Key Configuration TAB///
+        // ///////////////////////////////////////////////////////////
         wKeyConfigTab = new CTabItem(wTabFolder, SWT.NONE);
         wKeyConfigTab.setText(BaseMessages.getString(PKG, "JsonOutputDialog.KeyConfigTab.TabTitle"));
 
@@ -326,9 +340,13 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
         wKeyConfigComp.layout();
         wKeyConfigTab.setControl(wKeyConfigComp);
 
+        // ///////////////////////////////////////////////////////////
         // END OF Key Configuration TAB
+        // ///////////////////////////////////////////////////////////
 
+        // ///////////////////////////////////////////////////////////
         // Fields tab...
+        // ///////////////////////////////////////////////////////////
         wFieldsTab = new CTabItem(wTabFolder, SWT.NONE);
         wFieldsTab.setText(BaseMessages.getString(PKG, "JsonOutputDialog.FieldsTab.TabTitle"));
 
@@ -376,6 +394,85 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
         fdFields.right = new FormAttachment(100, 0);
         fdFields.bottom = new FormAttachment(wGet, -margin);
         wFields.setLayoutData(fdFields);
+
+        // ///////////////////////////////////////////////////////////
+        // START OF Additional Fields Configuration TAB///
+        // ///////////////////////////////////////////////////////////
+        wAdditionalFieldsConfigTab = new CTabItem(wTabFolder, SWT.NONE);
+        wAdditionalFieldsConfigTab.setText(BaseMessages.getString(PKG, "JsonOutputDialog.AdditionalFieldsConfigTab.TabTitle"));
+
+        FormLayout additionalFieldsConfigLayout = new FormLayout();
+        additionalFieldsConfigLayout.marginWidth = 3;
+        additionalFieldsConfigLayout.marginHeight = 3;
+
+        Composite wAdditionalFieldsConfigComp = new Composite(wTabFolder, SWT.NONE);
+        props.setLook(wAdditionalFieldsConfigComp);
+
+        // JSON Size field
+        wlJSONSizeFieldname = new Label(wAdditionalFieldsConfigComp, SWT.RIGHT);
+        wlJSONSizeFieldname.setText(BaseMessages.getString(PKG, "JsonOutputDialog.JSONSize.Label"));
+        props.setLook(wlJSONSizeFieldname);
+        fdlJSONSizeFieldname = new FormData();
+        fdlJSONSizeFieldname.left = new FormAttachment(0, 0);
+        fdlJSONSizeFieldname.right = new FormAttachment(middle, -margin);
+        fdlJSONSizeFieldname.top = new FormAttachment(wlBlocName, margin);
+        wlJSONSizeFieldname.setLayoutData(fdlJSONSizeFieldname);
+        wJSONSizeFieldname = new TextVar(transMeta, wAdditionalFieldsConfigComp, SWT.BORDER | SWT.READ_ONLY);
+        wJSONSizeFieldname.setEditable(true);
+        props.setLook(wJSONSizeFieldname);
+        wJSONSizeFieldname.addModifyListener(lsMod);
+        fdJSONSizeFieldname = new FormData();
+        fdJSONSizeFieldname.left = new FormAttachment(middle, 0);
+        fdJSONSizeFieldname.top = new FormAttachment(wBlocName, margin);
+        fdJSONSizeFieldname.right = new FormAttachment(100, 0);
+        wJSONSizeFieldname.setLayoutData(fdJSONSizeFieldname);
+
+        // JSON page starts ad field
+        wlJSONPageStartAtFieldname = new Label(wAdditionalFieldsConfigComp, SWT.RIGHT);
+        wlJSONPageStartAtFieldname.setText(BaseMessages.getString(PKG, "JsonOutputDialog.JSONPageStartsAt.Label"));
+        props.setLook(wlJSONPageStartAtFieldname);
+        fdlJSONPageStartAtFieldname = new FormData();
+        fdlJSONPageStartAtFieldname.left = new FormAttachment(0, 0);
+        fdlJSONPageStartAtFieldname.right = new FormAttachment(middle, -margin);
+        fdlJSONPageStartAtFieldname.top = new FormAttachment(wlJSONSizeFieldname, margin);
+        wlJSONPageStartAtFieldname.setLayoutData(fdlJSONPageStartAtFieldname);
+        wJSONPageStartAtFieldname = new TextVar(transMeta, wAdditionalFieldsConfigComp, SWT.BORDER | SWT.READ_ONLY);
+        wJSONPageStartAtFieldname.setEditable(true);
+        props.setLook(wJSONPageStartAtFieldname);
+        wJSONPageStartAtFieldname.addModifyListener(lsMod);
+        fdJSONPageStartAtFieldname = new FormData();
+        fdJSONPageStartAtFieldname.left = new FormAttachment(middle, 0);
+        fdJSONPageStartAtFieldname.top = new FormAttachment(wJSONSizeFieldname, margin);
+        fdJSONPageStartAtFieldname.right = new FormAttachment(100, 0);
+        wJSONPageStartAtFieldname.setLayoutData(fdJSONPageStartAtFieldname);
+
+        // JSON ends at field
+        wlJSONPageEndAtFieldname = new Label(wAdditionalFieldsConfigComp, SWT.RIGHT);
+        wlJSONPageEndAtFieldname.setText(BaseMessages.getString(PKG, "JsonOutputDialog.JSONPageEndsAt.Label"));
+        props.setLook(wlJSONPageEndAtFieldname);
+        fdlJSONPageEndAtFieldname = new FormData();
+        fdlJSONPageEndAtFieldname.left = new FormAttachment(0, 0);
+        fdlJSONPageEndAtFieldname.right = new FormAttachment(middle, -margin);
+        fdlJSONPageEndAtFieldname.top = new FormAttachment(wJSONPageStartAtFieldname, margin);
+        wlJSONPageEndAtFieldname.setLayoutData(fdlJSONPageEndAtFieldname);
+        wJSONPageEndAtFieldname = new TextVar(transMeta, wAdditionalFieldsConfigComp, SWT.BORDER | SWT.READ_ONLY);
+        wJSONPageEndAtFieldname.setEditable(true);
+        props.setLook(wJSONPageEndAtFieldname);
+        wJSONPageEndAtFieldname.addModifyListener(lsMod);
+        fdJSONPageEndAtFieldname = new FormData();
+        fdJSONPageEndAtFieldname.left = new FormAttachment(middle, 0);
+        fdJSONPageEndAtFieldname.top = new FormAttachment(wJSONPageStartAtFieldname, margin);
+        fdJSONPageEndAtFieldname.right = new FormAttachment(100, 0);
+        wJSONPageEndAtFieldname.setLayoutData(fdJSONPageEndAtFieldname);
+
+        wAdditionalFieldsConfigComp.setLayout(additionalFieldsConfigLayout);
+        wAdditionalFieldsConfigComp.layout();
+        wAdditionalFieldsConfigTab.setControl(wAdditionalFieldsConfigComp);
+
+        // ///////////////////////////////////////////////////////////
+        // END OF Additional Fields Configuration TAB
+        // ///////////////////////////////////////////////////////////
+
 
         //
         // Search the fields in the background
@@ -1055,6 +1152,10 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
         wAddToResult.setSelection(input.AddToResult());
         wDoNotOpenNewFileInit.setSelection(input.isDoNotOpenNewFileInit());
 
+        wJSONSizeFieldname.setText(Const.NVL(input.getJsonSizeFieldname(), ""));
+        wJSONPageStartAtFieldname.setText(Const.NVL(input.getJsonPageStartsAtFieldname(), ""));
+        wJSONPageEndAtFieldname.setText(Const.NVL(input.getJsonPageEndsAtFieldname(), ""));
+
         if (isDebug()) {
             logDebug(BaseMessages.getString(PKG, "JsonOutputDialog.Log.GettingFieldsInfo"));
         }
@@ -1123,6 +1224,10 @@ public class JsonOutputDialog extends BaseStepDialog implements StepDialogInterf
         jsometa.setEncoding(wEncoding.getText());
         jsometa.setAddToResult(wAddToResult.getSelection());
         jsometa.setDoNotOpenNewFileInit(wDoNotOpenNewFileInit.getSelection());
+
+        jsometa.setJsonSizeFieldname(wJSONSizeFieldname.getText());
+        jsometa.setJsonPageStartsAtFieldname(wJSONPageStartAtFieldname.getText());
+        jsometa.setJsonPageEndsAtFieldname(wJSONPageEndAtFieldname.getText());
 
         int nrKeyFields = wKeyFields.nrNonEmpty();
 
